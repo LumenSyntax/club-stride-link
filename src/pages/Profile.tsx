@@ -1,18 +1,58 @@
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Activity, Award, Calendar, TrendingUp, Flame, Clock } from "lucide-react";
+import { Activity, Award, Calendar, TrendingUp, Flame, Clock, Loader2, MapPin } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+
+interface ClassRegistration {
+  id: string;
+  class_id: string;
+  classes: {
+    title: string;
+    instructor: string;
+    class_date: string;
+    class_time: string;
+    class_type: string;
+  };
+}
+
+interface EventRegistration {
+  id: string;
+  event_id: string;
+  events: {
+    title: string;
+    event_date: string;
+    event_time: string;
+    location: string;
+    instructor: string | null;
+  };
+}
+
+interface Profile {
+  full_name: string | null;
+  avatar_url: string | null;
+}
 
 const Profile = () => {
-  const stats = [
-    { label: "Total KM", value: "342", icon: Activity, trend: "+12%" },
-    { label: "Best Time", value: "5:18/km", icon: TrendingUp, trend: "-6%" },
-    { label: "Current Streak", value: "12 days", icon: Flame, trend: "+4" },
-    { label: "Achievements", value: "12", icon: Award, trend: "+2" },
-  ];
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [classRegistrations, setClassRegistrations] = useState<ClassRegistration[]>([]);
+  const [eventRegistrations, setEventRegistrations] = useState<EventRegistration[]>([]);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [fullName, setFullName] = useState("");
 
   const monthlyProgress = [
     { month: "Jul", km: 45 },
@@ -24,28 +64,151 @@ const Profile = () => {
     { month: "Jan", km: 112 },
   ];
 
-  const upcomingClasses = [
-    { 
-      title: "Morning Power Run", 
-      instructor: "Mike Chen", 
-      date: "Jan 15, 2025", 
-      time: "06:00 AM",
-      type: "livestream" as const
-    },
-    { 
-      title: "HIIT & Run Combo", 
-      instructor: "Sarah Johnson", 
-      date: "Jan 17, 2025", 
-      time: "07:00 AM",
-      type: "video" as const
-    },
-    { 
-      title: "Long Distance Training", 
-      instructor: "Alex Rodriguez", 
-      date: "Jan 20, 2025", 
-      time: "08:00 AM",
-      type: "livestream" as const
-    },
+  useEffect(() => {
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
+    loadProfileData();
+  }, [user, navigate]);
+
+  const loadProfileData = async () => {
+    if (!user) return;
+
+    try {
+      const [profileRes, classRegsRes, eventRegsRes] = await Promise.all([
+        supabase.from("profiles").select("*").eq("id", user.id).single(),
+        supabase
+          .from("class_registrations")
+          .select(`
+            id,
+            class_id,
+            classes (
+              title,
+              instructor,
+              class_date,
+              class_time,
+              class_type
+            )
+          `)
+          .eq("user_id", user.id)
+          .order("classes(class_date)", { ascending: true }),
+        supabase
+          .from("event_registrations")
+          .select(`
+            id,
+            event_id,
+            events (
+              title,
+              event_date,
+              event_time,
+              location,
+              instructor
+            )
+          `)
+          .eq("user_id", user.id)
+          .order("events(event_date)", { ascending: true })
+      ]);
+
+      if (profileRes.data) {
+        setProfile(profileRes.data);
+        setFullName(profileRes.data.full_name || "");
+      }
+      if (classRegsRes.data) setClassRegistrations(classRegsRes.data as ClassRegistration[]);
+      if (eventRegsRes.data) setEventRegistrations(eventRegsRes.data as EventRegistration[]);
+    } catch (error) {
+      console.error("Error loading profile data:", error);
+      toast({ title: "Error loading profile data", variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ full_name: fullName })
+        .eq("id", user.id);
+
+      if (error) throw error;
+
+      toast({ title: "Profile updated successfully" });
+      setIsEditDialogOpen(false);
+      loadProfileData();
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      toast({ title: "Error updating profile", variant: "destructive" });
+    }
+  };
+
+  const handleCancelClassRegistration = async (registrationId: string) => {
+    if (!confirm("Are you sure you want to cancel this class registration?")) return;
+
+    try {
+      const { error } = await supabase
+        .from("class_registrations")
+        .delete()
+        .eq("id", registrationId);
+
+      if (error) throw error;
+
+      toast({ title: "Class registration cancelled" });
+      loadProfileData();
+    } catch (error) {
+      console.error("Error cancelling registration:", error);
+      toast({ title: "Error cancelling registration", variant: "destructive" });
+    }
+  };
+
+  const handleCancelEventRegistration = async (registrationId: string) => {
+    if (!confirm("Are you sure you want to cancel this event registration?")) return;
+
+    try {
+      const { error } = await supabase
+        .from("event_registrations")
+        .delete()
+        .eq("id", registrationId);
+
+      if (error) throw error;
+
+      toast({ title: "Event registration cancelled" });
+      loadProfileData();
+    } catch (error) {
+      console.error("Error cancelling registration:", error);
+      toast({ title: "Error cancelling registration", variant: "destructive" });
+    }
+  };
+
+  const getInitials = (name: string | null) => {
+    if (!name) return user?.email?.charAt(0).toUpperCase() || "U";
+    return name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
+  };
+
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString("en-US", { 
+      month: "short", 
+      day: "numeric", 
+      year: "numeric" 
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  const stats = [
+    { label: "CLASSES", value: classRegistrations.length.toString(), icon: Activity, trend: "" },
+    { label: "EVENTS", value: eventRegistrations.length.toString(), icon: Award, trend: "" },
+    { label: "STRAVA", value: "CONNECT", icon: TrendingUp, trend: "" },
+    { label: "STREAK", value: "N/A", icon: Flame, trend: "" },
   ];
 
   return (
@@ -55,55 +218,78 @@ const Profile = () => {
       <main className="container mx-auto px-4 pt-24 pb-16">
         <div className="max-w-6xl mx-auto">
           {/* Profile Header */}
-          <Card className="mb-8 border-2">
+          <Card className="mb-8 border-4">
             <CardContent className="pt-6">
               <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
-                <Avatar className="h-24 w-24 ring-4 ring-foreground/20 grayscale">
-                  <AvatarImage src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop" />
-                  <AvatarFallback className="bg-foreground text-background font-black text-2xl">JD</AvatarFallback>
+                <Avatar className="h-24 w-24 border-4 border-foreground">
+                  <AvatarImage src={profile?.avatar_url || ""} />
+                  <AvatarFallback className="bg-foreground text-background font-black text-2xl">
+                    {getInitials(profile?.full_name || null)}
+                  </AvatarFallback>
                 </Avatar>
                 
                 <div className="flex-1 text-center md:text-left">
-                  <h1 className="text-3xl font-black uppercase mb-2">Jane Doe</h1>
-                  <p className="text-muted-foreground mb-4 uppercase tracking-wide text-sm">Member since January 2024</p>
+                  <h1 className="text-3xl font-black uppercase mb-2 font-display tracking-wide">
+                    {profile?.full_name || user?.email || "RUNNER"}
+                  </h1>
+                  <p className="text-muted-foreground mb-4 uppercase tracking-ultra-wide text-sm font-bold">
+                    {user?.email}
+                  </p>
                   <div className="flex flex-wrap gap-2 justify-center md:justify-start">
-                    <Badge variant="secondary" className="uppercase tracking-wider">Marathon Runner</Badge>
-                    <Badge variant="secondary" className="uppercase tracking-wider">100+ Runs</Badge>
-                    <Badge variant="secondary" className="uppercase tracking-wider">Early Bird</Badge>
+                    <Badge variant="secondary" className="uppercase tracking-ultra-wide font-black border-2 border-foreground">
+                      MEMBER
+                    </Badge>
+                    {classRegistrations.length > 0 && (
+                      <Badge variant="secondary" className="uppercase tracking-ultra-wide font-black border-2 border-foreground">
+                        {classRegistrations.length} CLASSES
+                      </Badge>
+                    )}
                   </div>
                 </div>
 
                 <div className="flex gap-2">
-                  <Button variant="outline" className="uppercase tracking-wider">Edit Profile</Button>
-                  <Button className="uppercase tracking-wider">Connect Strava</Button>
+                  <Button 
+                    variant="outline" 
+                    className="uppercase tracking-ultra-wide font-black"
+                    onClick={() => setIsEditDialogOpen(true)}
+                  >
+                    EDIT PROFILE
+                  </Button>
+                  <Button className="uppercase tracking-ultra-wide font-black">
+                    CONNECT STRAVA
+                  </Button>
                 </div>
               </div>
             </CardContent>
           </Card>
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-0 mb-8 border-4 border-foreground">
             {stats.map((stat, index) => {
               const Icon = stat.icon;
               return (
-                <Card key={index} className="border-2 transition-all duration-300 hover:shadow-elegant hover:border-foreground">
-                  <CardContent className="pt-6">
-                    <div className="flex items-start justify-between mb-2">
-                      <Icon className="h-6 w-6 text-foreground" />
-                      <span className="text-xs font-bold text-foreground">{stat.trend}</span>
-                    </div>
-                    <div className="text-3xl font-black mb-1">{stat.value}</div>
-                    <div className="text-xs text-muted-foreground uppercase tracking-wider">{stat.label}</div>
-                  </CardContent>
-                </Card>
+                <div
+                  key={index}
+                  className={`p-6 border-foreground ${
+                    index < 3 ? "border-r-4" : ""
+                  } hover:bg-foreground hover:text-background transition-colors`}
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <Icon className="h-6 w-6" />
+                  </div>
+                  <div className="text-3xl font-black mb-1">{stat.value}</div>
+                  <div className="text-xs uppercase tracking-ultra-wide font-bold">{stat.label}</div>
+                </div>
               );
             })}
           </div>
 
           {/* Monthly Progress Chart */}
-          <Card className="border-2 mb-8">
+          <Card className="border-4 mb-8">
             <CardHeader>
-              <CardTitle className="text-2xl font-black uppercase tracking-tight">Monthly Progress</CardTitle>
+              <CardTitle className="text-2xl font-black uppercase tracking-ultra-wide font-display">
+                MONTHLY PROGRESS
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
@@ -111,19 +297,18 @@ const Profile = () => {
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                   <XAxis 
                     dataKey="month" 
-                    stroke="hsl(var(--muted-foreground))"
+                    stroke="hsl(var(--foreground))"
                     style={{ fontSize: '12px', fontWeight: 'bold' }}
                   />
                   <YAxis 
-                    stroke="hsl(var(--muted-foreground))"
+                    stroke="hsl(var(--foreground))"
                     style={{ fontSize: '12px', fontWeight: 'bold' }}
                     label={{ value: 'KM', angle: -90, position: 'insideLeft', style: { fontWeight: 'bold' } }}
                   />
                   <Tooltip 
                     contentStyle={{ 
                       backgroundColor: 'hsl(var(--card))',
-                      border: '2px solid hsl(var(--border))',
-                      borderRadius: 'var(--radius)',
+                      border: '4px solid hsl(var(--border))',
                       fontWeight: 'bold'
                     }}
                   />
@@ -131,66 +316,189 @@ const Profile = () => {
                     type="monotone" 
                     dataKey="km" 
                     stroke="hsl(var(--foreground))" 
-                    strokeWidth={3}
-                    dot={{ fill: 'hsl(var(--foreground))', strokeWidth: 2, r: 5 }}
-                    activeDot={{ r: 7 }}
+                    strokeWidth={4}
+                    dot={{ fill: 'hsl(var(--foreground))', strokeWidth: 2, r: 6 }}
+                    activeDot={{ r: 8 }}
                   />
                 </LineChart>
               </ResponsiveContainer>
             </CardContent>
           </Card>
 
-          {/* Upcoming Classes */}
-          <Card className="border-2 mb-8">
+          {/* Registered Classes */}
+          <Card className="border-4 mb-8">
             <CardHeader>
-              <CardTitle className="text-2xl font-black uppercase tracking-tight">Upcoming Classes</CardTitle>
+              <CardTitle className="text-2xl font-black uppercase tracking-ultra-wide font-display">
+                MY CLASSES
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {upcomingClasses.map((classItem, index) => (
-                  <div
-                    key={index}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border-2 border-border hover:border-foreground transition-all gap-4"
+              {classRegistrations.length === 0 ? (
+                <div className="text-center py-8 border-4 border-border">
+                  <p className="text-foreground uppercase tracking-ultra-wide font-bold">NO CLASSES REGISTERED</p>
+                  <Button 
+                    className="mt-4 uppercase tracking-ultra-wide font-black"
+                    onClick={() => navigate("/classes")}
                   >
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h3 className="font-black text-foreground uppercase tracking-wide">{classItem.title}</h3>
-                        <Badge
-                          className={`uppercase tracking-wider text-xs ${
-                            classItem.type === "livestream"
-                              ? "bg-foreground text-background"
-                              : "bg-muted text-foreground"
-                          }`}
+                    BROWSE CLASSES
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-0">
+                  {classRegistrations.map((reg, index) => (
+                    <div
+                      key={reg.id}
+                      className={`flex flex-col sm:flex-row sm:items-center justify-between p-6 border-foreground gap-4 hover:bg-foreground hover:text-background transition-colors ${
+                        index < classRegistrations.length - 1 ? "border-b-4" : ""
+                      }`}
+                    >
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <h3 className="font-black uppercase tracking-wide">{reg.classes.title}</h3>
+                          <Badge
+                            className={`uppercase tracking-ultra-wide text-xs border-2 ${
+                              reg.classes.class_type === "livestream"
+                                ? "bg-current text-background border-current"
+                                : "bg-background text-foreground border-foreground"
+                            }`}
+                          >
+                            {reg.classes.class_type === "livestream" ? "LIVE" : "ON-DEMAND"}
+                          </Badge>
+                        </div>
+                        <p className="text-sm uppercase tracking-wide font-bold opacity-70">
+                          WITH {reg.classes.instructor}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="text-sm font-bold">
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-4 w-4" />
+                            <span>{formatDate(reg.classes.class_date)}</span>
+                          </div>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Clock className="h-4 w-4" />
+                            <span>{reg.classes.class_time}</span>
+                          </div>
+                        </div>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="uppercase tracking-ultra-wide font-black"
+                          onClick={() => handleCancelClassRegistration(reg.id)}
                         >
-                          {classItem.type === "livestream" ? "LIVE" : "On-Demand"}
-                        </Badge>
+                          CANCEL
+                        </Button>
                       </div>
-                      <p className="text-sm text-muted-foreground uppercase tracking-wide">
-                        with {classItem.instructor}
-                      </p>
                     </div>
-                    <div className="flex items-center gap-4">
-                      <div className="text-sm">
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4 text-muted-foreground" />
-                          <span className="font-bold">{classItem.date}</span>
-                        </div>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Clock className="h-4 w-4 text-muted-foreground" />
-                          <span className="font-bold">{classItem.time}</span>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Registered Events */}
+          <Card className="border-4">
+            <CardHeader>
+              <CardTitle className="text-2xl font-black uppercase tracking-ultra-wide font-display">
+                MY EVENTS
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {eventRegistrations.length === 0 ? (
+                <div className="text-center py-8 border-4 border-border">
+                  <p className="text-foreground uppercase tracking-ultra-wide font-bold">NO EVENTS REGISTERED</p>
+                  <Button 
+                    className="mt-4 uppercase tracking-ultra-wide font-black"
+                    onClick={() => navigate("/events")}
+                  >
+                    BROWSE EVENTS
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-0">
+                  {eventRegistrations.map((reg, index) => (
+                    <div
+                      key={reg.id}
+                      className={`flex flex-col sm:flex-row sm:items-center justify-between p-6 border-foreground gap-4 hover:bg-foreground hover:text-background transition-colors ${
+                        index < eventRegistrations.length - 1 ? "border-b-4" : ""
+                      }`}
+                    >
+                      <div className="flex-1">
+                        <h3 className="font-black uppercase tracking-wide mb-2">{reg.events.title}</h3>
+                        <div className="flex flex-col gap-1">
+                          <p className="text-sm uppercase tracking-wide font-bold opacity-70 flex items-center gap-2">
+                            <MapPin className="h-4 w-4" />
+                            {reg.events.location}
+                          </p>
+                          {reg.events.instructor && (
+                            <p className="text-sm uppercase tracking-wide font-bold opacity-70">
+                              WITH {reg.events.instructor}
+                            </p>
+                          )}
                         </div>
                       </div>
-                      <Button size="sm" variant="outline" className="uppercase tracking-wider">
-                        Cancel
-                      </Button>
+                      <div className="flex items-center gap-4">
+                        <div className="text-sm font-bold">
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-4 w-4" />
+                            <span>{formatDate(reg.events.event_date)}</span>
+                          </div>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Clock className="h-4 w-4" />
+                            <span>{reg.events.event_time}</span>
+                          </div>
+                        </div>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="uppercase tracking-ultra-wide font-black"
+                          onClick={() => handleCancelEventRegistration(reg.id)}
+                        >
+                          CANCEL
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
       </main>
+
+      {/* Edit Profile Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="font-black uppercase tracking-wide">EDIT PROFILE</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleUpdateProfile} className="space-y-4">
+            <div>
+              <Label htmlFor="fullName" className="uppercase tracking-wide font-bold">FULL NAME</Label>
+              <Input
+                id="fullName"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                className="border-4"
+                placeholder="ENTER YOUR NAME"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button type="submit" className="uppercase tracking-ultra-wide font-black">
+                SAVE
+              </Button>
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => setIsEditDialogOpen(false)}
+                className="uppercase tracking-ultra-wide font-black"
+              >
+                CANCEL
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
