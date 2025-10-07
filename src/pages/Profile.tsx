@@ -44,16 +44,7 @@ const Profile = () => {
   const [activityStats, setActivityStats] = useState({ count: 0, duration: 0 });
   const [isStravaConnected, setIsStravaConnected] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
-
-  const monthlyProgress = [
-    { month: "Jul", km: 45 },
-    { month: "Aug", km: 62 },
-    { month: "Sep", km: 78 },
-    { month: "Oct", km: 54 },
-    { month: "Nov", km: 89 },
-    { month: "Dec", km: 95 },
-    { month: "Jan", km: 112 },
-  ];
+  const [monthlyProgress, setMonthlyProgress] = useState<{ month: string; minutes: number }[]>([]);
 
 
   useEffect(() => {
@@ -105,7 +96,7 @@ const Profile = () => {
     try {
       const { data } = await supabase
         .from("activities")
-        .select("duration")
+        .select("duration, activity_date")
         .eq("user_id", user.id);
 
       if (data) {
@@ -113,6 +104,34 @@ const Profile = () => {
           count: data.length,
           duration: data.reduce((sum, a) => sum + (a.duration || 0), 0),
         });
+
+        // Calculate monthly progress for the last 6 months
+        const monthlyData: Record<string, number> = {};
+        const now = new Date();
+        
+        // Initialize last 6 months
+        for (let i = 5; i >= 0; i--) {
+          const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+          const monthKey = date.toLocaleDateString('en-US', { month: 'short' });
+          monthlyData[monthKey] = 0;
+        }
+
+        // Aggregate activity durations by month
+        data.forEach((activity) => {
+          const activityDate = new Date(activity.activity_date);
+          const monthKey = activityDate.toLocaleDateString('en-US', { month: 'short' });
+          if (monthKey in monthlyData) {
+            monthlyData[monthKey] += activity.duration || 0;
+          }
+        });
+
+        // Convert to chart format
+        const chartData = Object.entries(monthlyData).map(([month, minutes]) => ({
+          month,
+          minutes: Math.round(minutes),
+        }));
+
+        setMonthlyProgress(chartData);
       }
     } catch (error) {
       console.error("Error loading activity stats:", error);
@@ -428,7 +447,7 @@ const Profile = () => {
                   <YAxis 
                     stroke="hsl(var(--foreground))"
                     style={{ fontSize: '12px', fontWeight: 'bold' }}
-                    label={{ value: 'KM', angle: -90, position: 'insideLeft', style: { fontWeight: 'bold' } }}
+                    label={{ value: 'MINUTES', angle: -90, position: 'insideLeft', style: { fontWeight: 'bold' } }}
                   />
                   <Tooltip 
                     contentStyle={{ 
@@ -439,7 +458,7 @@ const Profile = () => {
                   />
                   <Line 
                     type="monotone" 
-                    dataKey="km" 
+                    dataKey="minutes" 
                     stroke="hsl(var(--foreground))" 
                     strokeWidth={4}
                     dot={{ fill: 'hsl(var(--foreground))', strokeWidth: 2, r: 6 }}
