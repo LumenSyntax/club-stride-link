@@ -41,7 +41,7 @@ const Profile = () => {
   const [eventRegistrations, setEventRegistrations] = useState<EventRegistration[]>([]);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [fullName, setFullName] = useState("");
-  const [activityStats, setActivityStats] = useState({ count: 0, duration: 0 });
+  const [activityStats, setActivityStats] = useState({ count: 0, duration: 0, miles: 0 });
   const [isStravaConnected, setIsStravaConnected] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [weeklyProgress, setWeeklyProgress] = useState<{ week: string; miles: number }[]>([]);
@@ -100,9 +100,13 @@ const Profile = () => {
         .eq("user_id", user.id);
 
       if (data) {
+        // Calculate total miles (convert km to miles)
+        const totalMiles = data.reduce((sum, a) => sum + ((a.distance || 0) * 0.621371), 0);
+        
         setActivityStats({
           count: data.length,
           duration: data.reduce((sum, a) => sum + (a.duration || 0), 0),
+          miles: Math.round(totalMiles * 10) / 10, // Round to 1 decimal
         });
 
         // Calculate weekly progress for the last 7 weeks
@@ -335,7 +339,7 @@ const Profile = () => {
   const stats = [
     { label: "EVENTS", value: eventRegistrations.length.toString(), icon: Calendar, trend: "" },
     { label: "ACTIVITIES", value: activityStats.count.toString(), icon: Activity, trend: "" },
-    { label: "TIME TRAINED", value: `${activityStats.duration}MIN`, icon: Clock, trend: "" },
+    { label: "MILES RUN", value: `${activityStats.miles}MI`, icon: TrendingUp, trend: "" },
     { label: "STREAK", value: "N/A", icon: Flame, trend: "" },
   ];
 
