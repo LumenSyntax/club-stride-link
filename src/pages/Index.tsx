@@ -102,7 +102,7 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight mb-4">Why ELIT3?</h2>
+              <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight mb-4">Why ELIT<span className="inline-block scale-x-[-1]">E</span>?</h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto uppercase tracking-wide">
                 Everything you need to elevate your performance
               </p>
