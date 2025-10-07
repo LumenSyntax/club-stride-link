@@ -76,8 +76,41 @@ const Profile = () => {
     if (!user) return;
 
     try {
-      const [profileRes, classRegsRes, eventRegsRes] = await Promise.all([
-        supabase.from("profiles").select("*").eq("id", user.id).single(),
+      // Try to get profile, create if doesn't exist
+      let { data: profileData, error: profileError } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      // If profile doesn't exist, create it
+      if (!profileData && !profileError) {
+        const { data: newProfile, error: insertError } = await supabase
+          .from("profiles")
+          .insert([
+            {
+              id: user.id,
+              full_name: user.user_metadata?.full_name || null,
+              avatar_url: null,
+            },
+          ])
+          .select()
+          .single();
+
+        if (insertError) {
+          console.error("Error creating profile:", insertError);
+        } else {
+          profileData = newProfile;
+        }
+      }
+
+      if (profileData) {
+        setProfile(profileData);
+        setFullName(profileData.full_name || "");
+      }
+
+      // Load registrations
+      const [classRegsRes, eventRegsRes] = await Promise.all([
         supabase
           .from("class_registrations")
           .select(`
@@ -107,13 +140,9 @@ const Profile = () => {
             )
           `)
           .eq("user_id", user.id)
-          .order("events(event_date)", { ascending: true })
+          .order("events(event_date)", { ascending: true }),
       ]);
 
-      if (profileRes.data) {
-        setProfile(profileRes.data);
-        setFullName(profileRes.data.full_name || "");
-      }
       if (classRegsRes.data) setClassRegistrations(classRegsRes.data as ClassRegistration[]);
       if (eventRegsRes.data) setEventRegistrations(eventRegsRes.data as EventRegistration[]);
     } catch (error) {
