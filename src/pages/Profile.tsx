@@ -41,6 +41,7 @@ const Profile = () => {
   const [eventRegistrations, setEventRegistrations] = useState<EventRegistration[]>([]);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [fullName, setFullName] = useState("");
+  const [activityStats, setActivityStats] = useState({ count: 0, duration: 0 });
 
   const monthlyProgress = [
     { month: "Jul", km: 45 },
@@ -52,13 +53,34 @@ const Profile = () => {
     { month: "Jan", km: 112 },
   ];
 
+
   useEffect(() => {
     if (!user) {
       navigate("/auth");
       return;
     }
     loadProfileData();
+    loadActivityStats();
   }, [user, navigate]);
+
+  const loadActivityStats = async () => {
+    if (!user) return;
+    try {
+      const { data } = await supabase
+        .from("activities")
+        .select("duration")
+        .eq("user_id", user.id);
+
+      if (data) {
+        setActivityStats({
+          count: data.length,
+          duration: data.reduce((sum, a) => sum + (a.duration || 0), 0),
+        });
+      }
+    } catch (error) {
+      console.error("Error loading activity stats:", error);
+    }
+  };
 
   const loadProfileData = async () => {
     if (!user) return;
@@ -184,32 +206,6 @@ const Profile = () => {
       </div>
     );
   }
-
-  const [activityStats, setActivityStats] = useState({ count: 0, duration: 0 });
-
-  useEffect(() => {
-    if (user) {
-      loadActivityStats();
-    }
-  }, [user]);
-
-  const loadActivityStats = async () => {
-    try {
-      const { data } = await supabase
-        .from("activities")
-        .select("duration")
-        .eq("user_id", user?.id);
-
-      if (data) {
-        setActivityStats({
-          count: data.length,
-          duration: data.reduce((sum, a) => sum + (a.duration || 0), 0),
-        });
-      }
-    } catch (error) {
-      console.error("Error loading activity stats:", error);
-    }
-  };
 
   const stats = [
     { label: "EVENTS", value: eventRegistrations.length.toString(), icon: Calendar, trend: "" },
