@@ -277,7 +277,11 @@ export default function Admin() {
                       </div>
                       <div>
                         <Label htmlFor="class_type">Type</Label>
-                        <Input id="class_type" name="class_type" defaultValue={editingClass?.class_type} required />
+                        <select id="class_type" name="class_type" defaultValue={editingClass?.class_type} required className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                          <option value="">Select type...</option>
+                          <option value="video">Video</option>
+                          <option value="livestream">Livestream</option>
+                        </select>
                       </div>
                     </div>
                     <div>
@@ -381,7 +385,13 @@ export default function Admin() {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor="event_type">Type</Label>
-                        <Input id="event_type" name="event_type" defaultValue={editingEvent?.event_type} required />
+                        <select id="event_type" name="event_type" defaultValue={editingEvent?.event_type} required className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                          <option value="">Select type...</option>
+                          <option value="running">Running</option>
+                          <option value="hiit">HIIT</option>
+                          <option value="strength">Strength</option>
+                          <option value="social">Social</option>
+                        </select>
                       </div>
                       <div>
                         <Label htmlFor="location">Location</Label>
