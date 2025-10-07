@@ -44,6 +44,7 @@ interface Event {
   location: string;
   max_participants: number;
   instructor?: string;
+  thumbnail_url?: string;
   participant_count?: number;
 }
 
@@ -243,6 +244,14 @@ export default function Admin() {
   const handleSaveEvent = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
+    const imageFile = formData.get('thumbnail') as File;
+    
+    let thumbnailUrl = editingEvent?.thumbnail_url || null;
+    
+    if (imageFile && imageFile.size > 0) {
+      const uploadedUrl = await handleImageUpload(imageFile);
+      if (uploadedUrl) thumbnailUrl = uploadedUrl;
+    }
     
     const eventData = {
       title: formData.get('title') as string,
@@ -253,6 +262,7 @@ export default function Admin() {
       location: formData.get('location') as string,
       max_participants: parseInt(formData.get('max_participants') as string),
       instructor: formData.get('instructor') as string,
+      thumbnail_url: thumbnailUrl,
       created_by: (await supabase.auth.getUser()).data.user?.id
     };
 
@@ -562,8 +572,18 @@ export default function Admin() {
                       <Label htmlFor="event_max_participants">Max Participants</Label>
                       <Input id="event_max_participants" name="max_participants" type="number" defaultValue={editingEvent?.max_participants || 30} required />
                     </div>
+                    <div>
+                      <Label htmlFor="event-thumbnail">Thumbnail Image</Label>
+                      <Input id="event-thumbnail" name="thumbnail" type="file" accept="image/*" />
+                      {editingEvent?.thumbnail_url && (
+                        <p className="text-sm text-muted-foreground mt-1">Current thumbnail will be kept if no new image is uploaded</p>
+                      )}
+                    </div>
                     <div className="flex gap-2">
-                      <Button type="submit">Save</Button>
+                      <Button type="submit" disabled={uploading}>
+                        {uploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                        Save
+                      </Button>
                       <Button type="button" variant="outline" onClick={() => setIsEventDialogOpen(false)}>
                         Cancel
                       </Button>
@@ -580,6 +600,9 @@ export default function Admin() {
                     <CardTitle className="text-lg">{event.title}</CardTitle>
                   </CardHeader>
                   <CardContent>
+                    {event.thumbnail_url && (
+                      <img src={event.thumbnail_url} alt={event.title} className="w-full h-40 object-cover rounded mb-2" />
+                    )}
                     <p className="text-sm">{event.description}</p>
                     <p className="text-sm mt-2">Date: {event.event_date.split('T')[0]}</p>
                     <p className="text-sm">Time: {event.event_time}</p>
