@@ -16,11 +16,11 @@ const Navigation = () => {
   ];
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-lg border-b border-border">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          <Link to="/" className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            RunClub
+          <Link to="/" className="text-2xl font-black tracking-tighter">
+            ELIT<span className="font-black">3</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -29,14 +29,14 @@ const Navigation = () => {
               <Link
                 key={link.path}
                 to={link.path}
-                className={`text-sm font-medium transition-colors hover:text-primary ${
-                  isActive(link.path) ? "text-primary" : "text-foreground/80"
+                className={`text-sm font-bold uppercase tracking-wider transition-colors hover:text-foreground ${
+                  isActive(link.path) ? "text-foreground" : "text-muted-foreground"
                 }`}
               >
                 {link.label}
               </Link>
             ))}
-            <Button variant="hero" size="sm">
+            <Button size="sm" className="uppercase tracking-wider">
               Join Now
             </Button>
           </div>
@@ -60,14 +60,14 @@ const Navigation = () => {
                   key={link.path}
                   to={link.path}
                   onClick={() => setIsOpen(false)}
-                  className={`text-sm font-medium transition-colors hover:text-primary ${
-                    isActive(link.path) ? "text-primary" : "text-foreground/80"
+                  className={`text-sm font-bold uppercase tracking-wider transition-colors hover:text-foreground ${
+                    isActive(link.path) ? "text-foreground" : "text-muted-foreground"
                   }`}
                 >
                   {link.label}
                 </Link>
               ))}
-              <Button variant="hero" size="sm" className="w-full">
+              <Button size="sm" className="w-full uppercase tracking-wider">
                 Join Now
               </Button>
             </div>

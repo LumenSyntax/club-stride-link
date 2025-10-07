@@ -65,31 +65,32 @@ const Index = () => {
       <Navigation />
 
       {/* Hero Section */}
-      <section className="relative h-[90vh] flex items-center justify-center overflow-hidden">
+      <section className="relative h-[90vh] flex items-center justify-center overflow-hidden bg-background">
         <div
-          className="absolute inset-0 bg-cover bg-center"
+          className="absolute inset-0 bg-cover bg-center grayscale"
           style={{ backgroundImage: `url(${heroImage})` }}
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/70 to-background/30" />
+          <div className="absolute inset-0 bg-background/90" />
         </div>
 
-        <div className="relative z-10 container mx-auto px-4 text-center md:text-left">
-          <div className="max-w-3xl">
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
-              Run Your Best,{" "}
-              <span className="bg-gradient-hero bg-clip-text text-transparent">Together</span>
+        <div className="relative z-10 container mx-auto px-4 text-center">
+          <div className="max-w-4xl mx-auto">
+            <h1 className="text-7xl md:text-9xl font-black mb-6 leading-none tracking-tight">
+              ELIT3
             </h1>
-            <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-2xl">
-              Join our community of runners. Train with expert coaches, track your progress, and
-              achieve your running goals.
+            <p className="text-xl md:text-2xl font-bold uppercase tracking-wider mb-4">
+              Run Club
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-              <Button variant="hero" size="lg">
-                Start Free Trial
+            <p className="text-lg md:text-xl text-muted-foreground mb-12 max-w-2xl mx-auto">
+              Trae tu mejor actitud. Join the community.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button size="lg" className="uppercase tracking-wider font-bold">
+                Join Now
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
-              <Button variant="outline" size="lg">
-                Explore Classes
+              <Button variant="outline" size="lg" className="uppercase tracking-wider font-bold">
+                Explore
               </Button>
             </div>
           </div>
@@ -97,13 +98,13 @@ const Index = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-muted/30">
+      <section className="py-20 border-t border-border">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">Why Join RunClub?</h2>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Everything you need to elevate your running performance
+              <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight mb-4">Why ELIT3?</h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto uppercase tracking-wide">
+                Everything you need to elevate your performance
               </p>
             </div>
 
@@ -113,13 +114,13 @@ const Index = () => {
                 return (
                   <div
                     key={index}
-                    className="group p-8 rounded-2xl bg-card border border-border transition-all duration-300 hover:shadow-card hover:-translate-y-1"
+                    className="group p-8 border-2 border-border bg-card transition-all duration-300 hover:border-foreground hover:shadow-elegant"
                   >
-                    <div className="mb-4 inline-flex p-3 rounded-xl bg-gradient-primary">
-                      <Icon className="h-6 w-6 text-primary-foreground" />
+                    <div className="mb-6 inline-flex p-4 bg-foreground">
+                      <Icon className="h-8 w-8 text-background" />
                     </div>
-                    <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                    <p className="text-muted-foreground">{feature.description}</p>
+                    <h3 className="text-xl font-black uppercase mb-3">{feature.title}</h3>
+                    <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
                   </div>
                 );
               })}
@@ -129,16 +130,16 @@ const Index = () => {
       </section>
 
       {/* Featured Classes */}
-      <section className="py-20">
+      <section className="py-20 border-t border-border">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             <div className="flex items-center justify-between mb-12">
               <div>
-                <h2 className="text-3xl md:text-4xl font-bold mb-2">Featured Classes</h2>
-                <p className="text-muted-foreground">Popular sessions this week</p>
+                <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight mb-2">Featured</h2>
+                <p className="text-muted-foreground uppercase tracking-wide">This Week's Sessions</p>
               </div>
               <Link to="/classes">
-                <Button variant="ghost">
+                <Button variant="ghost" className="uppercase tracking-wider font-bold">
                   View All
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
@@ -155,17 +156,17 @@ const Index = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-hero">
+      <section className="py-32 border-t-4 border-foreground bg-foreground">
         <div className="container mx-auto px-4 text-center">
           <div className="max-w-3xl mx-auto">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-primary-foreground">
-              Ready to Start Running?
+            <h2 className="text-5xl md:text-7xl font-black mb-6 text-background uppercase tracking-tight">
+              Ready to Run?
             </h2>
-            <p className="text-xl text-primary-foreground/90 mb-8">
-              Join thousands of runners improving their performance every day
+            <p className="text-xl text-background/80 mb-8 uppercase tracking-wide font-bold">
+              Join the community. Elevate your performance.
             </p>
-            <Button size="lg" variant="secondary" className="shadow-lg hover:shadow-xl">
-              Get Started Today
+            <Button size="lg" variant="secondary" className="shadow-elegant uppercase tracking-wider font-bold text-lg">
+              Get Started
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </div>

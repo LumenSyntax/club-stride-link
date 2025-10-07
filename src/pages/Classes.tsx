@@ -77,12 +77,12 @@ const Classes = () => {
       
       <main className="container mx-auto px-4 pt-24 pb-16">
         <div className="max-w-6xl mx-auto">
-          <div className="mb-12 text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-hero bg-clip-text text-transparent">
+          <div className="mb-12 text-center border-b-4 border-foreground pb-8">
+            <h1 className="text-5xl md:text-7xl font-black mb-4 uppercase tracking-tight">
               Training Classes
             </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Join live sessions with expert coaches or train on your own schedule with our video library
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto uppercase tracking-wide">
+              Join live sessions with expert coaches or train on your own schedule
             </p>
           </div>
 

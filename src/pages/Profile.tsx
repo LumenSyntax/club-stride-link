@@ -27,27 +27,27 @@ const Profile = () => {
       <main className="container mx-auto px-4 pt-24 pb-16">
         <div className="max-w-6xl mx-auto">
           {/* Profile Header */}
-          <Card className="mb-8">
+          <Card className="mb-8 border-2">
             <CardContent className="pt-6">
               <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
-                <Avatar className="h-24 w-24 ring-4 ring-primary/20">
+                <Avatar className="h-24 w-24 ring-4 ring-foreground/20 grayscale">
                   <AvatarImage src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop" />
-                  <AvatarFallback>JD</AvatarFallback>
+                  <AvatarFallback className="bg-foreground text-background font-black text-2xl">JD</AvatarFallback>
                 </Avatar>
                 
                 <div className="flex-1 text-center md:text-left">
-                  <h1 className="text-3xl font-bold mb-2">Jane Doe</h1>
-                  <p className="text-muted-foreground mb-4">Member since January 2024</p>
+                  <h1 className="text-3xl font-black uppercase mb-2">Jane Doe</h1>
+                  <p className="text-muted-foreground mb-4 uppercase tracking-wide text-sm">Member since January 2024</p>
                   <div className="flex flex-wrap gap-2 justify-center md:justify-start">
-                    <Badge variant="secondary">Marathon Runner</Badge>
-                    <Badge variant="secondary">100+ Runs</Badge>
-                    <Badge variant="secondary">Early Bird</Badge>
+                    <Badge variant="secondary" className="uppercase tracking-wider">Marathon Runner</Badge>
+                    <Badge variant="secondary" className="uppercase tracking-wider">100+ Runs</Badge>
+                    <Badge variant="secondary" className="uppercase tracking-wider">Early Bird</Badge>
                   </div>
                 </div>
 
                 <div className="flex gap-2">
-                  <Button variant="outline">Edit Profile</Button>
-                  <Button variant="hero">Connect Strava</Button>
+                  <Button variant="outline" className="uppercase tracking-wider">Edit Profile</Button>
+                  <Button className="uppercase tracking-wider">Connect Strava</Button>
                 </div>
               </div>
             </CardContent>
@@ -58,14 +58,14 @@ const Profile = () => {
             {stats.map((stat, index) => {
               const Icon = stat.icon;
               return (
-                <Card key={index} className="transition-all duration-300 hover:shadow-card hover:-translate-y-1">
+                <Card key={index} className="border-2 transition-all duration-300 hover:shadow-elegant hover:border-foreground">
                   <CardContent className="pt-6">
                     <div className="flex items-start justify-between mb-2">
-                      <Icon className="h-5 w-5 text-primary" />
-                      <span className="text-xs font-medium text-primary">{stat.trend}</span>
+                      <Icon className="h-6 w-6 text-foreground" />
+                      <span className="text-xs font-bold text-foreground">{stat.trend}</span>
                     </div>
-                    <div className="text-2xl font-bold mb-1">{stat.value}</div>
-                    <div className="text-sm text-muted-foreground">{stat.label}</div>
+                    <div className="text-3xl font-black mb-1">{stat.value}</div>
+                    <div className="text-xs text-muted-foreground uppercase tracking-wider">{stat.label}</div>
                   </CardContent>
                 </Card>
               );
@@ -73,29 +73,29 @@ const Profile = () => {
           </div>
 
           {/* Recent Activity */}
-          <Card>
+          <Card className="border-2">
             <CardHeader>
-              <CardTitle>Recent Activity</CardTitle>
+              <CardTitle className="text-2xl font-black uppercase tracking-tight">Recent Activity</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {recentRuns.map((run, index) => (
                   <div
                     key={index}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border-2 border-border hover:border-foreground transition-all"
                   >
                     <div className="mb-2 sm:mb-0">
-                      <div className="font-semibold text-foreground">{run.date}</div>
-                      <div className="text-sm text-muted-foreground">Distance: {run.distance}</div>
+                      <div className="font-bold text-foreground uppercase tracking-wide">{run.date}</div>
+                      <div className="text-sm text-muted-foreground">Distance: <span className="font-bold">{run.distance}</span></div>
                     </div>
                     <div className="flex gap-6 text-sm">
                       <div>
-                        <span className="text-muted-foreground">Pace:</span>{" "}
-                        <span className="font-medium">{run.pace}</span>
+                        <span className="text-muted-foreground uppercase tracking-wider">Pace:</span>{" "}
+                        <span className="font-bold">{run.pace}</span>
                       </div>
                       <div>
-                        <span className="text-muted-foreground">Duration:</span>{" "}
-                        <span className="font-medium">{run.duration}</span>
+                        <span className="text-muted-foreground uppercase tracking-wider">Duration:</span>{" "}
+                        <span className="font-bold">{run.duration}</span>
                       </div>
                     </div>
                   </div>
@@ -103,7 +103,7 @@ const Profile = () => {
               </div>
               
               <div className="mt-6 text-center">
-                <Button variant="outline" className="w-full sm:w-auto">
+                <Button variant="outline" className="w-full sm:w-auto uppercase tracking-wider">
                   View All Activities
                 </Button>
               </div>

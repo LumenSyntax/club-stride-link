@@ -25,18 +25,18 @@ const ClassCard = ({
   image,
 }: ClassCardProps) => {
   return (
-    <Card className="group overflow-hidden transition-all duration-300 hover:shadow-card hover:-translate-y-1">
+    <Card className="group overflow-hidden border-2 border-border transition-all duration-300 hover:border-foreground hover:shadow-elegant bg-card">
       <div className="relative h-48 overflow-hidden">
         <img
           src={image}
           alt={title}
-          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+          className="w-full h-full object-cover grayscale transition-all duration-300 group-hover:scale-110 group-hover:grayscale-0"
         />
         <Badge
-          className={`absolute top-4 right-4 ${
+          className={`absolute top-4 right-4 uppercase tracking-wider font-bold ${
             type === "livestream"
-              ? "bg-destructive text-destructive-foreground"
-              : "bg-secondary text-secondary-foreground"
+              ? "bg-foreground text-background"
+              : "bg-muted text-foreground"
           }`}
         >
           {type === "livestream" ? "LIVE" : "On-Demand"}
@@ -44,8 +44,8 @@ const ClassCard = ({
       </div>
 
       <CardHeader>
-        <CardTitle className="text-xl">{title}</CardTitle>
-        <p className="text-sm text-muted-foreground">with {instructor}</p>
+        <CardTitle className="text-xl font-black uppercase">{title}</CardTitle>
+        <p className="text-sm text-muted-foreground uppercase tracking-wide">with {instructor}</p>
       </CardHeader>
 
       <CardContent className="space-y-3">
@@ -66,7 +66,7 @@ const ClassCard = ({
       </CardContent>
 
       <CardFooter>
-        <Button variant="hero" className="w-full">
+        <Button className="w-full uppercase tracking-wider font-bold">
           {type === "livestream" ? "Join Live" : "Watch Now"}
         </Button>
       </CardFooter>
