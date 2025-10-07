@@ -45,6 +45,7 @@ const Events = () => {
   const [viewMode, setViewMode] = useState<"calendar" | "list">("calendar");
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
+  const [registering, setRegistering] = useState(false);
 
   useEffect(() => {
     loadEvents();
@@ -133,6 +134,77 @@ const Events = () => {
           event.date.toDateString() === selectedDate.toDateString()
       )
     : [];
+
+  const handleRSVP = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to RSVP for events",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!selectedEvent) return;
+
+    try {
+      setRegistering(true);
+
+      // Check if already registered
+      const { data: existingReg } = await supabase
+        .from("event_registrations")
+        .select("id")
+        .eq("event_id", selectedEvent.id)
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (existingReg) {
+        toast({
+          title: "Already registered",
+          description: "You've already reserved a spot for this event",
+        });
+        return;
+      }
+
+      // Check if event is full
+      if (selectedEvent.participants >= selectedEvent.maxParticipants) {
+        toast({
+          title: "Event full",
+          description: "This event has reached maximum capacity",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Register for event
+      const { error } = await supabase
+        .from("event_registrations")
+        .insert({
+          event_id: selectedEvent.id,
+          user_id: user.id,
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success!",
+        description: "You've reserved your spot for this event",
+      });
+
+      // Reload events to update participant count
+      await loadEvents();
+      setDialogOpen(false);
+    } catch (error) {
+      console.error("Error registering for event:", error);
+      toast({
+        title: "Registration failed",
+        description: "Could not reserve your spot. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setRegistering(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -393,8 +465,20 @@ const Events = () => {
                 )}
 
                 <div className="flex gap-3 mt-4">
-                  <Button className="flex-1 uppercase tracking-wider font-bold" size="lg">
-                    RSVP - Reserve Spot
+                  <Button 
+                    className="flex-1 uppercase tracking-wider font-bold" 
+                    size="lg"
+                    onClick={handleRSVP}
+                    disabled={registering}
+                  >
+                    {registering ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Reserving...
+                      </>
+                    ) : (
+                      "RSVP - Reserve Spot"
+                    )}
                   </Button>
                   <Button
                     variant="outline"
