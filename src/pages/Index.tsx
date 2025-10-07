@@ -92,6 +92,16 @@ const Index = () => {
               <Button variant="outline" size="lg" className="uppercase tracking-ultra-wide font-black text-lg">
                 EXPLORE
               </Button>
+              <Button 
+                variant="outline" 
+                size="lg" 
+                className="uppercase tracking-ultra-wide font-black text-lg"
+                asChild
+              >
+                <a href="https://loselitemerch2.itemorder.com/shop/home/" target="_blank" rel="noopener noreferrer">
+                  SHOP MERCH
+                </a>
+              </Button>
             </div>
           </div>
         </div>
