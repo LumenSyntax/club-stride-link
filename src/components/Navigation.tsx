@@ -1,11 +1,14 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LogOut } from "lucide-react";
 import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
 
 const Navigation = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+  const { user, signOut } = useAuth();
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -37,9 +40,21 @@ const Navigation = () => {
                 {link.label}
               </Link>
             ))}
-            <Button size="sm" className="uppercase tracking-wider">
-              Join Now
-            </Button>
+            {user ? (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => signOut()}
+                className="uppercase tracking-wider"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Logout
+              </Button>
+            ) : (
+              <Button size="sm" className="uppercase tracking-wider" onClick={() => navigate("/auth")}>
+                Login
+              </Button>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -68,9 +83,21 @@ const Navigation = () => {
                   {link.label}
                 </Link>
               ))}
-              <Button size="sm" className="w-full uppercase tracking-wider">
-                Join Now
-              </Button>
+              {user ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => signOut()}
+                  className="w-full uppercase tracking-wider"
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Logout
+                </Button>
+              ) : (
+                <Button size="sm" className="w-full uppercase tracking-wider" onClick={() => navigate("/auth")}>
+                  Login
+                </Button>
+              )}
             </div>
           </div>
         )}
