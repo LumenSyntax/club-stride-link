@@ -185,10 +185,36 @@ const Profile = () => {
     );
   }
 
+  const [activityStats, setActivityStats] = useState({ count: 0, duration: 0 });
+
+  useEffect(() => {
+    if (user) {
+      loadActivityStats();
+    }
+  }, [user]);
+
+  const loadActivityStats = async () => {
+    try {
+      const { data } = await supabase
+        .from("activities")
+        .select("duration")
+        .eq("user_id", user?.id);
+
+      if (data) {
+        setActivityStats({
+          count: data.length,
+          duration: data.reduce((sum, a) => sum + (a.duration || 0), 0),
+        });
+      }
+    } catch (error) {
+      console.error("Error loading activity stats:", error);
+    }
+  };
+
   const stats = [
-    { label: "EVENTS", value: eventRegistrations.length.toString(), icon: Activity, trend: "" },
-    { label: "ACHIEVEMENTS", value: "0", icon: Award, trend: "" },
-    { label: "STRAVA", value: "CONNECT", icon: TrendingUp, trend: "" },
+    { label: "EVENTS", value: eventRegistrations.length.toString(), icon: Calendar, trend: "" },
+    { label: "ACTIVITIES", value: activityStats.count.toString(), icon: Activity, trend: "" },
+    { label: "TIME TRAINED", value: `${activityStats.duration}MIN`, icon: Clock, trend: "" },
     { label: "STREAK", value: "N/A", icon: Flame, trend: "" },
   ];
 

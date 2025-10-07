@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      activities: {
+        Row: {
+          activity_date: string
+          activity_type: Database["public"]["Enums"]["activity_type"]
+          calories: number | null
+          created_at: string
+          description: string | null
+          distance: number | null
+          duration: number | null
+          id: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          activity_date: string
+          activity_type: Database["public"]["Enums"]["activity_type"]
+          calories?: number | null
+          created_at?: string
+          description?: string | null
+          distance?: number | null
+          duration?: number | null
+          id?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          activity_date?: string
+          activity_type?: Database["public"]["Enums"]["activity_type"]
+          calories?: number | null
+          created_at?: string
+          description?: string | null
+          distance?: number | null
+          duration?: number | null
+          id?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       class_parts: {
         Row: {
           class_id: string
@@ -317,6 +359,15 @@ export type Database = {
       }
     }
     Enums: {
+      activity_type:
+        | "running"
+        | "cycling"
+        | "swimming"
+        | "hiit"
+        | "strength"
+        | "yoga"
+        | "walking"
+        | "other"
       app_role: "admin" | "user"
     }
     CompositeTypes: {
@@ -445,6 +496,16 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      activity_type: [
+        "running",
+        "cycling",
+        "swimming",
+        "hiit",
+        "strength",
+        "yoga",
+        "walking",
+        "other",
+      ],
       app_role: ["admin", "user"],
     },
   },
