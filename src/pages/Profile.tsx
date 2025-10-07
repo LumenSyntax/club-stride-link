@@ -14,17 +14,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-interface ClassRegistration {
-  id: string;
-  class_id: string;
-  classes: {
-    title: string;
-    instructor: string;
-    class_date: string;
-    class_time: string;
-    class_type: string;
-  };
-}
 
 interface EventRegistration {
   id: string;
@@ -49,7 +38,6 @@ const Profile = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [classRegistrations, setClassRegistrations] = useState<ClassRegistration[]>([]);
   const [eventRegistrations, setEventRegistrations] = useState<EventRegistration[]>([]);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [fullName, setFullName] = useState("");
@@ -109,42 +97,24 @@ const Profile = () => {
         setFullName(profileData.full_name || "");
       }
 
-      // Load registrations
-      const [classRegsRes, eventRegsRes] = await Promise.all([
-        supabase
-          .from("class_registrations")
-          .select(`
-            id,
-            class_id,
-            classes (
-              title,
-              instructor,
-              class_date,
-              class_time,
-              class_type
-            )
-          `)
-          .eq("user_id", user.id)
-          .order("classes(class_date)", { ascending: true }),
-        supabase
-          .from("event_registrations")
-          .select(`
-            id,
-            event_id,
-            events (
-              title,
-              event_date,
-              event_time,
-              location,
-              instructor
-            )
-          `)
-          .eq("user_id", user.id)
-          .order("events(event_date)", { ascending: true }),
-      ]);
+      // Load event registrations
+      const { data: eventRegsData, error: eventRegsError } = await supabase
+        .from("event_registrations")
+        .select(`
+          id,
+          event_id,
+          events (
+            title,
+            event_date,
+            event_time,
+            location,
+            instructor
+          )
+        `)
+        .eq("user_id", user.id)
+        .order("events(event_date)", { ascending: true });
 
-      if (classRegsRes.data) setClassRegistrations(classRegsRes.data as ClassRegistration[]);
-      if (eventRegsRes.data) setEventRegistrations(eventRegsRes.data as EventRegistration[]);
+      if (eventRegsData) setEventRegistrations(eventRegsData as EventRegistration[]);
     } catch (error) {
       console.error("Error loading profile data:", error);
       toast({ title: "Error loading profile data", variant: "destructive" });
@@ -174,24 +144,6 @@ const Profile = () => {
     }
   };
 
-  const handleCancelClassRegistration = async (registrationId: string) => {
-    if (!confirm("Are you sure you want to cancel this class registration?")) return;
-
-    try {
-      const { error } = await supabase
-        .from("class_registrations")
-        .delete()
-        .eq("id", registrationId);
-
-      if (error) throw error;
-
-      toast({ title: "Class registration cancelled" });
-      loadProfileData();
-    } catch (error) {
-      console.error("Error cancelling registration:", error);
-      toast({ title: "Error cancelling registration", variant: "destructive" });
-    }
-  };
 
   const handleCancelEventRegistration = async (registrationId: string) => {
     if (!confirm("Are you sure you want to cancel this event registration?")) return;
@@ -234,8 +186,8 @@ const Profile = () => {
   }
 
   const stats = [
-    { label: "CLASSES", value: classRegistrations.length.toString(), icon: Activity, trend: "" },
-    { label: "EVENTS", value: eventRegistrations.length.toString(), icon: Award, trend: "" },
+    { label: "EVENTS", value: eventRegistrations.length.toString(), icon: Activity, trend: "" },
+    { label: "ACHIEVEMENTS", value: "0", icon: Award, trend: "" },
     { label: "STRAVA", value: "CONNECT", icon: TrendingUp, trend: "" },
     { label: "STREAK", value: "N/A", icon: Flame, trend: "" },
   ];
@@ -264,13 +216,13 @@ const Profile = () => {
                   <p className="text-muted-foreground mb-4 uppercase tracking-ultra-wide text-sm font-bold">
                     {user?.email}
                   </p>
-                  <div className="flex flex-wrap gap-2 justify-center md:justify-start">
+                   <div className="flex flex-wrap gap-2 justify-center md:justify-start">
                     <Badge variant="secondary" className="uppercase tracking-ultra-wide font-black border-2 border-foreground">
                       MEMBER
                     </Badge>
-                    {classRegistrations.length > 0 && (
+                    {eventRegistrations.length > 0 && (
                       <Badge variant="secondary" className="uppercase tracking-ultra-wide font-black border-2 border-foreground">
-                        {classRegistrations.length} CLASSES
+                        {eventRegistrations.length} EVENTS
                       </Badge>
                     )}
                   </div>
@@ -354,76 +306,6 @@ const Profile = () => {
             </CardContent>
           </Card>
 
-          {/* Registered Classes */}
-          <Card className="border-4 mb-8">
-            <CardHeader>
-              <CardTitle className="text-2xl font-black uppercase tracking-ultra-wide font-display">
-                MY CLASSES
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {classRegistrations.length === 0 ? (
-                <div className="text-center py-8 border-4 border-border">
-                  <p className="text-foreground uppercase tracking-ultra-wide font-bold">NO CLASSES REGISTERED</p>
-                  <Button 
-                    className="mt-4 uppercase tracking-ultra-wide font-black"
-                    onClick={() => navigate("/classes")}
-                  >
-                    BROWSE CLASSES
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-0">
-                  {classRegistrations.map((reg, index) => (
-                    <div
-                      key={reg.id}
-                      className={`flex flex-col sm:flex-row sm:items-center justify-between p-6 border-foreground gap-4 hover:bg-foreground hover:text-background transition-colors ${
-                        index < classRegistrations.length - 1 ? "border-b-4" : ""
-                      }`}
-                    >
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h3 className="font-black uppercase tracking-wide">{reg.classes.title}</h3>
-                          <Badge
-                            className={`uppercase tracking-ultra-wide text-xs border-2 ${
-                              reg.classes.class_type === "livestream"
-                                ? "bg-current text-background border-current"
-                                : "bg-background text-foreground border-foreground"
-                            }`}
-                          >
-                            {reg.classes.class_type === "livestream" ? "LIVE" : "ON-DEMAND"}
-                          </Badge>
-                        </div>
-                        <p className="text-sm uppercase tracking-wide font-bold opacity-70">
-                          WITH {reg.classes.instructor}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <div className="text-sm font-bold">
-                          <div className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4" />
-                            <span>{formatDate(reg.classes.class_date)}</span>
-                          </div>
-                          <div className="flex items-center gap-2 mt-1">
-                            <Clock className="h-4 w-4" />
-                            <span>{reg.classes.class_time}</span>
-                          </div>
-                        </div>
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          className="uppercase tracking-ultra-wide font-black"
-                          onClick={() => handleCancelClassRegistration(reg.id)}
-                        >
-                          CANCEL
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
 
           {/* Registered Events */}
           <Card className="border-4">

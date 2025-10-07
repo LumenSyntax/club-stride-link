@@ -14,28 +14,43 @@ export type Database = {
   }
   public: {
     Tables: {
-      class_registrations: {
+      class_parts: {
         Row: {
           class_id: string
+          created_at: string
+          description: string | null
+          duration: string | null
           id: string
-          registered_at: string
-          user_id: string
+          part_order: number
+          title: string
+          updated_at: string
+          video_url: string
         }
         Insert: {
           class_id: string
+          created_at?: string
+          description?: string | null
+          duration?: string | null
           id?: string
-          registered_at?: string
-          user_id: string
+          part_order: number
+          title: string
+          updated_at?: string
+          video_url: string
         }
         Update: {
           class_id?: string
+          created_at?: string
+          description?: string | null
+          duration?: string | null
           id?: string
-          registered_at?: string
-          user_id?: string
+          part_order?: number
+          title?: string
+          updated_at?: string
+          video_url?: string
         }
         Relationships: [
           {
-            foreignKeyName: "class_registrations_class_id_fkey"
+            foreignKeyName: "class_parts_class_id_fkey"
             columns: ["class_id"]
             isOneToOne: false
             referencedRelation: "classes"
@@ -45,43 +60,34 @@ export type Database = {
       }
       classes: {
         Row: {
-          class_date: string
-          class_time: string
-          class_type: string
           created_at: string
-          duration: string
+          description: string | null
           id: string
-          image_url: string | null
           instructor: string
-          max_participants: number
+          thumbnail_url: string | null
           title: string
           updated_at: string
+          upload_date: string
         }
         Insert: {
-          class_date: string
-          class_time: string
-          class_type: string
           created_at?: string
-          duration: string
+          description?: string | null
           id?: string
-          image_url?: string | null
           instructor: string
-          max_participants?: number
+          thumbnail_url?: string | null
           title: string
           updated_at?: string
+          upload_date: string
         }
         Update: {
-          class_date?: string
-          class_time?: string
-          class_type?: string
           created_at?: string
-          duration?: string
+          description?: string | null
           id?: string
-          image_url?: string | null
           instructor?: string
-          max_participants?: number
+          thumbnail_url?: string | null
           title?: string
           updated_at?: string
+          upload_date?: string
         }
         Relationships: []
       }

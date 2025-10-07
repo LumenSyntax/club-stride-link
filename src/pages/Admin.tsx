@@ -9,43 +9,55 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Plus, Pencil, Trash2 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Loader2, Plus, Pencil, Trash2, Video } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 interface Class {
-  id: string;
+  id?: string;
   title: string;
+  description?: string;
   instructor: string;
-  class_date: string;
-  class_time: string;
-  duration: string;
-  class_type: string;
-  image_url: string | null;
-  max_participants: number;
+  upload_date: string;
+  thumbnail_url?: string;
+}
+
+interface ClassPart {
+  id?: string;
+  class_id?: string;
+  title: string;
+  description?: string;
+  video_url: string;
+  part_order: number;
+  duration?: string;
 }
 
 interface Event {
-  id: string;
+  id?: string;
   title: string;
-  description: string | null;
+  description: string;
   event_date: string;
   event_time: string;
   event_type: string;
   location: string;
   max_participants: number;
-  instructor: string | null;
+  instructor?: string;
 }
 
 export default function Admin() {
   const { isAdmin, loading } = useAuth();
   const { toast } = useToast();
   const [classes, setClasses] = useState<Class[]>([]);
+  const [classParts, setClassParts] = useState<ClassPart[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
   const [loadingData, setLoadingData] = useState(true);
   const [editingClass, setEditingClass] = useState<Class | null>(null);
+  const [editingPart, setEditingPart] = useState<ClassPart | null>(null);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isClassDialogOpen, setIsClassDialogOpen] = useState(false);
+  const [isPartsDialogOpen, setIsPartsDialogOpen] = useState(false);
+  const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);
+  const [selectedClassForParts, setSelectedClassForParts] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
@@ -57,7 +69,7 @@ export default function Admin() {
   const loadData = async () => {
     try {
       const [classesRes, eventsRes] = await Promise.all([
-        supabase.from("classes").select("*").order("class_date", { ascending: true }),
+        supabase.from("classes").select("*").order("upload_date", { ascending: false }),
         supabase.from("events").select("*").order("event_date", { ascending: true })
       ]);
 
@@ -68,6 +80,22 @@ export default function Admin() {
       toast({ title: "Error loading data", variant: "destructive" });
     } finally {
       setLoadingData(false);
+    }
+  };
+
+  const loadClassParts = async (classId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("class_parts")
+        .select("*")
+        .eq("class_id", classId)
+        .order("part_order", { ascending: true });
+
+      if (error) throw error;
+      setClassParts(data || []);
+    } catch (error) {
+      console.error("Error loading class parts:", error);
+      toast({ title: "Error loading class parts", variant: "destructive" });
     }
   };
 
@@ -101,28 +129,25 @@ export default function Admin() {
   const handleSaveClass = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const imageFile = formData.get('image') as File;
+    const imageFile = formData.get('thumbnail') as File;
     
-    let imageUrl = editingClass?.image_url || null;
+    let thumbnailUrl = editingClass?.thumbnail_url || null;
     
     if (imageFile && imageFile.size > 0) {
       const uploadedUrl = await handleImageUpload(imageFile);
-      if (uploadedUrl) imageUrl = uploadedUrl;
+      if (uploadedUrl) thumbnailUrl = uploadedUrl;
     }
 
     const classData = {
       title: formData.get('title') as string,
+      description: formData.get('description') as string,
       instructor: formData.get('instructor') as string,
-      class_date: formData.get('class_date') as string,
-      class_time: formData.get('class_time') as string,
-      duration: formData.get('duration') as string,
-      class_type: formData.get('class_type') as string,
-      max_participants: parseInt(formData.get('max_participants') as string),
-      image_url: imageUrl
+      upload_date: formData.get('upload_date') as string,
+      thumbnail_url: thumbnailUrl
     };
 
     try {
-      if (editingClass) {
+      if (editingClass?.id) {
         const { error } = await supabase
           .from('classes')
           .update(classData)
@@ -136,12 +161,48 @@ export default function Admin() {
         if (error) throw error;
         toast({ title: "Class created successfully" });
       }
-      setIsDialogOpen(false);
+      setIsClassDialogOpen(false);
       setEditingClass(null);
       loadData();
     } catch (error) {
       console.error("Error saving class:", error);
       toast({ title: "Error saving class", variant: "destructive" });
+    }
+  };
+
+  const handleSaveClassPart = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+
+    const partData = {
+      class_id: selectedClassForParts!,
+      title: formData.get('title') as string,
+      description: formData.get('description') as string,
+      video_url: formData.get('video_url') as string,
+      part_order: parseInt(formData.get('part_order') as string),
+      duration: formData.get('duration') as string,
+    };
+
+    try {
+      if (editingPart?.id) {
+        const { error } = await supabase
+          .from('class_parts')
+          .update(partData)
+          .eq('id', editingPart.id);
+        if (error) throw error;
+        toast({ title: "Part updated successfully" });
+      } else {
+        const { error } = await supabase
+          .from('class_parts')
+          .insert([partData]);
+        if (error) throw error;
+        toast({ title: "Part added successfully" });
+      }
+      setEditingPart(null);
+      loadClassParts(selectedClassForParts!);
+    } catch (error) {
+      console.error("Error saving class part:", error);
+      toast({ title: "Error saving part", variant: "destructive" });
     }
   };
 
@@ -162,7 +223,7 @@ export default function Admin() {
     };
 
     try {
-      if (editingEvent) {
+      if (editingEvent?.id) {
         const { error } = await supabase
           .from('events')
           .update(eventData)
@@ -176,7 +237,7 @@ export default function Admin() {
         if (error) throw error;
         toast({ title: "Event created successfully" });
       }
-      setIsDialogOpen(false);
+      setIsEventDialogOpen(false);
       setEditingEvent(null);
       loadData();
     } catch (error) {
@@ -186,7 +247,7 @@ export default function Admin() {
   };
 
   const handleDeleteClass = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this class?")) return;
+    if (!confirm("Are you sure you want to delete this class and all its parts?")) return;
     
     try {
       const { error } = await supabase.from('classes').delete().eq('id', id);
@@ -196,6 +257,20 @@ export default function Admin() {
     } catch (error) {
       console.error("Error deleting class:", error);
       toast({ title: "Error deleting class", variant: "destructive" });
+    }
+  };
+
+  const handleDeleteClassPart = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this part?")) return;
+    
+    try {
+      const { error } = await supabase.from('class_parts').delete().eq('id', id);
+      if (error) throw error;
+      toast({ title: "Part deleted successfully" });
+      loadClassParts(selectedClassForParts!);
+    } catch (error) {
+      console.error("Error deleting part:", error);
+      toast({ title: "Error deleting part", variant: "destructive" });
     }
   };
 
@@ -233,23 +308,24 @@ export default function Admin() {
         
         <Tabs defaultValue="classes" className="w-full">
           <TabsList className="grid w-full grid-cols-2 max-w-md">
-            <TabsTrigger value="classes">Classes</TabsTrigger>
-            <TabsTrigger value="events">Events</TabsTrigger>
+            <TabsTrigger value="classes">Video Classes</TabsTrigger>
+            <TabsTrigger value="events">Events & Live Classes</TabsTrigger>
           </TabsList>
 
+          {/* Video Classes Tab */}
           <TabsContent value="classes" className="space-y-4">
             <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-semibold">Manage Classes</h2>
-              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <h2 className="text-2xl font-semibold">Manage Video Classes</h2>
+              <Dialog open={isClassDialogOpen} onOpenChange={setIsClassDialogOpen}>
                 <DialogTrigger asChild>
                   <Button onClick={() => setEditingClass(null)}>
                     <Plus className="mr-2 h-4 w-4" />
-                    Add Class
+                    Add Class Collection
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
-                    <DialogTitle>{editingClass ? 'Edit Class' : 'Add New Class'}</DialogTitle>
+                    <DialogTitle>{editingClass?.id ? 'Edit Class Collection' : 'Add New Class Collection'}</DialogTitle>
                   </DialogHeader>
                   <form onSubmit={handleSaveClass} className="space-y-4">
                     <div>
@@ -257,42 +333,22 @@ export default function Admin() {
                       <Input id="title" name="title" defaultValue={editingClass?.title} required />
                     </div>
                     <div>
+                      <Label htmlFor="description">Description</Label>
+                      <Textarea id="description" name="description" defaultValue={editingClass?.description} />
+                    </div>
+                    <div>
                       <Label htmlFor="instructor">Instructor</Label>
                       <Input id="instructor" name="instructor" defaultValue={editingClass?.instructor} required />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="class_date">Date</Label>
-                        <Input id="class_date" name="class_date" type="date" defaultValue={editingClass?.class_date} required />
-                      </div>
-                      <div>
-                        <Label htmlFor="class_time">Time</Label>
-                        <Input id="class_time" name="class_time" defaultValue={editingClass?.class_time} required />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="duration">Duration</Label>
-                        <Input id="duration" name="duration" defaultValue={editingClass?.duration} placeholder="e.g., 60 mins" required />
-                      </div>
-                      <div>
-                        <Label htmlFor="class_type">Type</Label>
-                        <select id="class_type" name="class_type" defaultValue={editingClass?.class_type} required className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-                          <option value="">Select type...</option>
-                          <option value="video">Video</option>
-                          <option value="livestream">Livestream</option>
-                        </select>
-                      </div>
+                    <div>
+                      <Label htmlFor="upload_date">Upload Date</Label>
+                      <Input id="upload_date" name="upload_date" type="date" defaultValue={editingClass?.upload_date || new Date().toISOString().split('T')[0]} required />
                     </div>
                     <div>
-                      <Label htmlFor="max_participants">Max Participants</Label>
-                      <Input id="max_participants" name="max_participants" type="number" defaultValue={editingClass?.max_participants || 30} required />
-                    </div>
-                    <div>
-                      <Label htmlFor="image">Image</Label>
-                      <Input id="image" name="image" type="file" accept="image/*" />
-                      {editingClass?.image_url && (
-                        <p className="text-sm text-muted-foreground mt-1">Current image will be kept if no new image is uploaded</p>
+                      <Label htmlFor="thumbnail">Thumbnail Image</Label>
+                      <Input id="thumbnail" name="thumbnail" type="file" accept="image/*" />
+                      {editingClass?.thumbnail_url && (
+                        <p className="text-sm text-muted-foreground mt-1">Current thumbnail will be kept if no new image is uploaded</p>
                       )}
                     </div>
                     <div className="flex gap-2">
@@ -300,7 +356,7 @@ export default function Admin() {
                         {uploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                         Save
                       </Button>
-                      <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                      <Button type="button" variant="outline" onClick={() => setIsClassDialogOpen(false)}>
                         Cancel
                       </Button>
                     </div>
@@ -316,52 +372,63 @@ export default function Admin() {
                     <CardTitle className="text-lg">{cls.title}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {cls.image_url && (
-                      <img src={cls.image_url} alt={cls.title} className="w-full h-40 object-cover rounded mb-2" />
+                    {cls.thumbnail_url && (
+                      <img src={cls.thumbnail_url} alt={cls.title} className="w-full h-40 object-cover rounded mb-2" />
                     )}
                     <p className="text-sm text-muted-foreground">Instructor: {cls.instructor}</p>
-                    <p className="text-sm">Date: {cls.class_date}</p>
-                    <p className="text-sm">Time: {cls.class_time}</p>
-                    <p className="text-sm">Duration: {cls.duration}</p>
-                    <p className="text-sm">Type: {cls.class_type}</p>
-                    <div className="flex gap-2 mt-4">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          setEditingClass(cls);
-                          setIsDialogOpen(true);
-                        }}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => handleDeleteClass(cls.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    <p className="text-sm">Upload Date: {cls.upload_date}</p>
+                    {cls.description && <p className="text-sm text-muted-foreground mt-2">{cls.description}</p>}
                   </CardContent>
+                  <CardFooter className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setSelectedClassForParts(cls.id!);
+                        loadClassParts(cls.id!);
+                        setIsPartsDialogOpen(true);
+                      }}
+                    >
+                      <Video className="h-4 w-4 mr-1" />
+                      Parts
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setEditingClass(cls);
+                        setIsClassDialogOpen(true);
+                      }}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => handleDeleteClass(cls.id!)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </CardFooter>
                 </Card>
               ))}
             </div>
           </TabsContent>
 
+          {/* Events & Live Classes Tab */}
           <TabsContent value="events" className="space-y-4">
             <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-semibold">Manage Events</h2>
-              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <h2 className="text-2xl font-semibold">Manage Events & Live Classes</h2>
+              <Dialog open={isEventDialogOpen} onOpenChange={setIsEventDialogOpen}>
                 <DialogTrigger asChild>
                   <Button onClick={() => setEditingEvent(null)}>
                     <Plus className="mr-2 h-4 w-4" />
-                    Add Event
+                    Add Event/Live Class
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
-                    <DialogTitle>{editingEvent ? 'Edit Event' : 'Add New Event'}</DialogTitle>
+                    <DialogTitle>{editingEvent?.id ? 'Edit Event' : 'Add New Event/Live Class'}</DialogTitle>
                   </DialogHeader>
                   <form onSubmit={handleSaveEvent} className="space-y-4">
                     <div>
@@ -375,7 +442,7 @@ export default function Admin() {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor="event_date">Date</Label>
-                        <Input id="event_date" name="event_date" type="date" defaultValue={editingEvent?.event_date.split('T')[0]} required />
+                        <Input id="event_date" name="event_date" type="date" defaultValue={editingEvent?.event_date?.split('T')[0]} required />
                       </div>
                       <div>
                         <Label htmlFor="event_time">Time</Label>
@@ -385,8 +452,8 @@ export default function Admin() {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor="event_type">Type</Label>
-                        <select id="event_type" name="event_type" defaultValue={editingEvent?.event_type} required className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-                          <option value="">Select type...</option>
+                        <select id="event_type" name="event_type" defaultValue={editingEvent?.event_type || 'live_class'} required className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                          <option value="live_class">Live Class</option>
                           <option value="running">Running</option>
                           <option value="hiit">HIIT</option>
                           <option value="strength">Strength</option>
@@ -404,11 +471,11 @@ export default function Admin() {
                     </div>
                     <div>
                       <Label htmlFor="event_max_participants">Max Participants</Label>
-                      <Input id="event_max_participants" name="max_participants" type="number" defaultValue={editingEvent?.max_participants || 50} required />
+                      <Input id="event_max_participants" name="max_participants" type="number" defaultValue={editingEvent?.max_participants || 30} required />
                     </div>
                     <div className="flex gap-2">
                       <Button type="submit">Save</Button>
-                      <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                      <Button type="button" variant="outline" onClick={() => setIsEventDialogOpen(false)}>
                         Cancel
                       </Button>
                     </div>
@@ -424,41 +491,112 @@ export default function Admin() {
                     <CardTitle className="text-lg">{event.title}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {event.description && (
-                      <p className="text-sm mb-2">{event.description}</p>
-                    )}
-                    <p className="text-sm text-muted-foreground">Type: {event.event_type}</p>
-                    <p className="text-sm">Date: {new Date(event.event_date).toLocaleDateString()}</p>
+                    <p className="text-sm">{event.description}</p>
+                    <p className="text-sm mt-2">Date: {event.event_date.split('T')[0]}</p>
                     <p className="text-sm">Time: {event.event_time}</p>
+                    <p className="text-sm">Type: {event.event_type === 'live_class' ? 'Live Class' : event.event_type}</p>
                     <p className="text-sm">Location: {event.location}</p>
-                    {event.instructor && (
-                      <p className="text-sm">Instructor: {event.instructor}</p>
-                    )}
-                    <div className="flex gap-2 mt-4">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          setEditingEvent(event);
-                          setIsDialogOpen(true);
-                        }}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => handleDeleteEvent(event.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    {event.instructor && <p className="text-sm">Instructor: {event.instructor}</p>}
+                    <p className="text-sm">Max: {event.max_participants}</p>
                   </CardContent>
+                  <CardFooter className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setEditingEvent(event);
+                        setIsEventDialogOpen(true);
+                      }}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => handleDeleteEvent(event.id!)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </CardFooter>
                 </Card>
               ))}
             </div>
           </TabsContent>
         </Tabs>
+
+        {/* Class Parts Dialog */}
+        <Dialog open={isPartsDialogOpen} onOpenChange={setIsPartsDialogOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Manage Class Parts</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <form onSubmit={handleSaveClassPart} className="p-4 border rounded-lg space-y-3">
+                <h3 className="font-semibold">{editingPart ? 'Edit Part' : 'Add New Part'}</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label htmlFor="part-title">Title</Label>
+                    <Input id="part-title" name="title" defaultValue={editingPart?.title} required />
+                  </div>
+                  <div>
+                    <Label htmlFor="part-order">Order</Label>
+                    <Input id="part-order" name="part_order" type="number" defaultValue={editingPart?.part_order || classParts.length + 1} required />
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="part-description">Description</Label>
+                  <Textarea id="part-description" name="description" defaultValue={editingPart?.description} />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label htmlFor="video_url">Video URL</Label>
+                    <Input id="video_url" name="video_url" defaultValue={editingPart?.video_url} required />
+                  </div>
+                  <div>
+                    <Label htmlFor="part-duration">Duration</Label>
+                    <Input id="part-duration" name="duration" placeholder="e.g., 15 mins" defaultValue={editingPart?.duration} />
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Button type="submit" size="sm">
+                    {editingPart ? 'Update' : 'Add'} Part
+                  </Button>
+                  {editingPart && (
+                    <Button type="button" size="sm" variant="outline" onClick={() => setEditingPart(null)}>
+                      Cancel Edit
+                    </Button>
+                  )}
+                </div>
+              </form>
+
+              <div className="space-y-2">
+                <h3 className="font-semibold">Parts ({classParts.length})</h3>
+                {classParts.map((part) => (
+                  <Card key={part.id}>
+                    <CardContent className="p-4">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <p className="font-semibold">Part {part.part_order}: {part.title}</p>
+                          {part.description && <p className="text-sm text-muted-foreground">{part.description}</p>}
+                          <p className="text-sm">Video: {part.video_url}</p>
+                          {part.duration && <p className="text-sm">Duration: {part.duration}</p>}
+                        </div>
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="outline" onClick={() => setEditingPart(part)}>
+                            <Pencil className="h-3 w-3" />
+                          </Button>
+                          <Button size="sm" variant="destructive" onClick={() => handleDeleteClassPart(part.id!)}>
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </main>
     </div>
   );
