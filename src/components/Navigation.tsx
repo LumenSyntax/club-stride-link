@@ -8,7 +8,7 @@ const Navigation = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
-  const { user, signOut } = useAuth();
+  const { user, isAdmin, signOut } = useAuth();
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -40,6 +40,16 @@ const Navigation = () => {
                 {link.label}
               </Link>
             ))}
+            {isAdmin && (
+              <Link
+                to="/admin"
+                className={`text-sm font-bold uppercase tracking-wider transition-colors hover:text-foreground ${
+                  isActive("/admin") ? "text-foreground" : "text-muted-foreground"
+                }`}
+              >
+                Admin
+              </Link>
+            )}
             {user ? (
               <Button
                 variant="outline"
@@ -83,6 +93,17 @@ const Navigation = () => {
                   {link.label}
                 </Link>
               ))}
+              {isAdmin && (
+                <Link
+                  to="/admin"
+                  onClick={() => setIsOpen(false)}
+                  className={`text-sm font-bold uppercase tracking-wider transition-colors hover:text-foreground ${
+                    isActive("/admin") ? "text-foreground" : "text-muted-foreground"
+                  }`}
+                >
+                  Admin
+                </Link>
+              )}
               {user ? (
                 <Button
                   variant="outline"
