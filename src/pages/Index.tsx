@@ -29,6 +29,7 @@ interface EventData {
   instructor: string | null;
   event_type: string;
   max_participants: number;
+  thumbnail_url: string | null;
 }
 
 const Index = () => {
@@ -246,11 +247,23 @@ const Index = () => {
 
                 {/* Display Event */}
                 {events.map((event) => (
-                  <Card key={event.id} className="border-4 hover:shadow-lg transition-shadow relative">
+                  <Card key={event.id} className="border-4 hover:shadow-lg transition-shadow relative group">
                     <Badge className="absolute top-4 right-4 z-10 font-bold uppercase bg-primary">
                       LIVE EVENT
                     </Badge>
                     <CardHeader>
+                      {event.thumbnail_url && (
+                        <div className="relative mb-4 overflow-hidden">
+                          <img 
+                            src={event.thumbnail_url} 
+                            alt={event.title}
+                            className="w-full h-48 object-cover"
+                          />
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Users className="h-16 w-16 text-white" />
+                          </div>
+                        </div>
+                      )}
                       <CardTitle className="text-xl uppercase font-black tracking-wide">
                         {event.title}
                       </CardTitle>
