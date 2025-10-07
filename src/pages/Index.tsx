@@ -104,73 +104,71 @@ const Index = () => {
         </div>
 
         <div className="relative z-10 container mx-auto px-4 text-center">
-          <div className="max-w-5xl mx-auto min-h-screen flex flex-col justify-between py-12">
-            {/* Spacer */}
-            <div></div>
-            
-            {/* Main Hero Content - Centered */}
-            <div className="flex-shrink-0">
-              <h1 className="text-8xl md:text-[12rem] font-black mb-8 leading-none tracking-normal font-display">
-                ELIT<span className="inline-block scale-x-[-1]">E</span>
-              </h1>
-              <p className="text-3xl md:text-4xl font-black uppercase tracking-ultra-wide mb-6">
-                RUN CLUB
+          <div className="max-w-5xl mx-auto">
+            <h1 className="text-8xl md:text-[12rem] font-black mb-8 leading-none tracking-normal font-display">
+              ELIT<span className="inline-block scale-x-[-1]">E</span>
+            </h1>
+            <p className="text-3xl md:text-4xl font-black uppercase tracking-ultra-wide mb-6">
+              RUN CLUB
+            </p>
+            <p className="text-xl md:text-2xl text-foreground mb-16 max-w-2xl mx-auto uppercase tracking-wide font-bold">
+              TRAE TU MEJOR ACTITUD. JOIN THE COMMUNITY.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-6 justify-center">
+              <Button size="lg" className="uppercase tracking-ultra-wide font-black text-lg" asChild>
+                <Link to="/auth">
+                  JOIN NOW
+                  <ArrowRight className="ml-2 h-6 w-6" />
+                </Link>
+              </Button>
+              <Button 
+                variant="outline" 
+                size="lg" 
+                className="uppercase tracking-ultra-wide font-black text-lg"
+                asChild
+              >
+                <a href="https://loselitemerch2.itemorder.com/shop/home/" target="_blank" rel="noopener noreferrer">
+                  SHOP MERCH
+                </a>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Partnership Section */}
+      <section className="py-12 border-b-4 border-border bg-card">
+        <div className="container mx-auto px-4">
+          <div className="max-w-2xl mx-auto text-center">
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <Tag className="h-5 w-5" />
+              <p className="text-xs font-black uppercase tracking-ultra-wide text-muted-foreground">
+                Official Partner
               </p>
-              <p className="text-xl md:text-2xl text-foreground mb-16 max-w-2xl mx-auto uppercase tracking-wide font-bold">
-                TRAE TU MEJOR ACTITUD. JOIN THE COMMUNITY.
+            </div>
+            <div className="bg-foreground/5 border-4 border-foreground/10 p-6">
+              <p className="text-lg md:text-xl font-black uppercase tracking-wide mb-2">
+                RAWPR NUTRITION
               </p>
-              <div className="flex flex-col sm:flex-row gap-6 justify-center">
-                <Button size="lg" className="uppercase tracking-ultra-wide font-black text-lg" asChild>
-                  <Link to="/auth">
-                    JOIN NOW
-                    <ArrowRight className="ml-2 h-6 w-6" />
-                  </Link>
-                </Button>
+              <p className="text-xs md:text-sm uppercase tracking-wide font-bold text-muted-foreground mb-4">
+                Premium supplements for elite athletes
+              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                 <Button 
-                  variant="outline" 
-                  size="lg" 
-                  className="uppercase tracking-ultra-wide font-black text-lg"
+                  variant="default" 
+                  size="default"
+                  className="uppercase tracking-ultra-wide font-black text-sm"
                   asChild
                 >
-                  <a href="https://loselitemerch2.itemorder.com/shop/home/" target="_blank" rel="noopener noreferrer">
-                    SHOP MERCH
+                  <a href="https://www.rawpr.shop/" target="_blank" rel="noopener noreferrer">
+                    SHOP NOW
+                    <ArrowRight className="ml-2 h-4 w-4" />
                   </a>
                 </Button>
-              </div>
-            </div>
-            
-            {/* Partnership Section - Bottom */}
-            <div className="max-w-2xl mx-auto">
-              <div className="flex items-center justify-center gap-2 mb-3">
-                <Tag className="h-5 w-5" />
-                <p className="text-xs font-black uppercase tracking-ultra-wide text-muted-foreground">
-                  Official Partner
-                </p>
-              </div>
-              <div className="bg-foreground/5 border-4 border-foreground/10 p-6">
-                <p className="text-lg md:text-xl font-black uppercase tracking-wide mb-2">
-                  RAWPR NUTRITION
-                </p>
-                <p className="text-xs md:text-sm uppercase tracking-wide font-bold text-muted-foreground mb-3">
-                  Premium supplements for elite athletes
-                </p>
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                  <Button 
-                    variant="default" 
-                    size="default"
-                    className="uppercase tracking-ultra-wide font-black text-sm"
-                    asChild
-                  >
-                    <a href="https://www.rawpr.shop/" target="_blank" rel="noopener noreferrer">
-                      SHOP NOW
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </a>
-                  </Button>
-                  <div className="bg-primary text-primary-foreground px-5 py-2 border-4 border-foreground">
-                    <p className="text-xs font-black uppercase tracking-ultra-wide">
-                      USE CODE: <span className="text-base">ELITE</span>
-                    </p>
-                  </div>
+                <div className="bg-primary text-primary-foreground px-5 py-2 border-4 border-foreground">
+                  <p className="text-xs font-black uppercase tracking-ultra-wide">
+                    USE CODE: <span className="text-base">ELITE</span>
+                  </p>
                 </div>
               </div>
             </div>
