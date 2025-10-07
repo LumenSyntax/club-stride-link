@@ -409,6 +409,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_user_strava_token: {
+        Args: { _user_id: string }
+        Returns: {
+          access_token: string
+          athlete_id: number
+          expires_at: string
+          refresh_token: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
