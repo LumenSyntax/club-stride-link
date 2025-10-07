@@ -75,8 +75,8 @@ const Index = () => {
 
         <div className="relative z-10 container mx-auto px-4 text-center">
           <div className="max-w-5xl mx-auto">
-            <h1 className="text-8xl md:text-[12rem] font-black mb-8 leading-none tracking-tighter font-display">
-              ELIT<span className="inline-block scale-x-[-1] -ml-6 md:-ml-10">E</span>
+            <h1 className="text-8xl md:text-[12rem] font-black mb-8 leading-none tracking-tight font-display">
+              ELIT<span className="inline-block scale-x-[-1] -ml-4 md:-ml-6">E</span>
             </h1>
             <p className="text-3xl md:text-4xl font-black uppercase tracking-ultra-wide mb-6">
               RUN CLUB
@@ -102,7 +102,7 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-20">
-              <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter mb-6 font-display">WHY ELIT<span className="inline-block scale-x-[-1] -ml-4 md:-ml-7">E</span>?</h2>
+              <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tight mb-6 font-display">WHY ELIT<span className="inline-block scale-x-[-1] -ml-3 md:-ml-5">E</span>?</h2>
               <p className="text-xl text-foreground max-w-2xl mx-auto uppercase tracking-wide font-bold">
                 EVERYTHING YOU NEED TO ELEVATE YOUR PERFORMANCE
               </p>
