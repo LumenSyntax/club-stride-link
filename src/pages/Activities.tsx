@@ -90,10 +90,13 @@ export default function Activities() {
         .gte("activity_date", weekAgo.toISOString().split('T')[0]);
 
       if (weeklyData) {
+        // Convert km to miles
+        const distanceInMiles = weeklyData.reduce((sum, a) => sum + ((a.distance || 0) * 0.621371), 0);
+        
         setWeeklyStats({
           count: weeklyData.length,
           duration: weeklyData.reduce((sum, a) => sum + (a.duration || 0), 0),
-          distance: weeklyData.reduce((sum, a) => sum + (a.distance || 0), 0),
+          distance: distanceInMiles,
         });
       }
 
@@ -104,10 +107,13 @@ export default function Activities() {
         .gte("activity_date", monthAgo.toISOString().split('T')[0]);
 
       if (monthlyData) {
+        // Convert km to miles
+        const distanceInMiles = monthlyData.reduce((sum, a) => sum + ((a.distance || 0) * 0.621371), 0);
+        
         setMonthlyStats({
           count: monthlyData.length,
           duration: monthlyData.reduce((sum, a) => sum + (a.duration || 0), 0),
-          distance: monthlyData.reduce((sum, a) => sum + (a.distance || 0), 0),
+          distance: distanceInMiles,
         });
       }
     } catch (error) {
@@ -127,7 +133,7 @@ export default function Activities() {
       title: formData.get("title") as string,
       description: formData.get("description") as string || null,
       duration: formData.get("duration") ? parseInt(formData.get("duration") as string) : null,
-      distance: formData.get("distance") ? parseFloat(formData.get("distance") as string) : null,
+      distance: formData.get("distance") ? parseFloat(formData.get("distance") as string) / 0.621371 : null, // Convert miles to km for storage
       calories: formData.get("calories") ? parseInt(formData.get("calories") as string) : null,
       activity_date: formData.get("activity_date") as string,
     };
@@ -315,13 +321,13 @@ export default function Activities() {
                 </div>
 
                 <div>
-                  <Label htmlFor="distance">Distance (km)</Label>
+                  <Label htmlFor="distance">Distance (miles)</Label>
                   <Input
                     id="distance"
                     name="distance"
                     type="number"
                     step="0.01"
-                    placeholder="5.5"
+                    placeholder="3.4"
                     defaultValue={editingActivity?.distance || ""}
                   />
                 </div>
@@ -377,7 +383,7 @@ export default function Activities() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Distance</p>
-                  <p className="text-2xl font-bold">{weeklyStats.distance.toFixed(1)}km</p>
+                  <p className="text-2xl font-bold">{weeklyStats.distance.toFixed(1)}mi</p>
                 </div>
               </div>
             </CardContent>
@@ -402,7 +408,7 @@ export default function Activities() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Distance</p>
-                  <p className="text-2xl font-bold">{monthlyStats.distance.toFixed(1)}km</p>
+                  <p className="text-2xl font-bold">{monthlyStats.distance.toFixed(1)}mi</p>
                 </div>
               </div>
             </CardContent>
@@ -471,7 +477,7 @@ export default function Activities() {
                               {activity.distance && (
                                 <div className="flex items-center gap-1">
                                   <MapPin className="h-4 w-4" />
-                                  {activity.distance} km
+                                  {(activity.distance * 0.621371).toFixed(1)} mi
                                 </div>
                               )}
                               {activity.calories && (
