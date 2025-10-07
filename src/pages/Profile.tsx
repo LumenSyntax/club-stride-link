@@ -326,51 +326,109 @@ const Profile = () => {
                   </Button>
                 </div>
               ) : (
-                <div className="space-y-0">
-                  {eventRegistrations.map((reg, index) => (
-                    <div
-                      key={reg.id}
-                      className={`flex flex-col sm:flex-row sm:items-center justify-between p-6 border-foreground gap-4 hover:bg-foreground hover:text-background transition-colors ${
-                        index < eventRegistrations.length - 1 ? "border-b-4" : ""
-                      }`}
-                    >
-                      <div className="flex-1">
-                        <h3 className="font-black uppercase tracking-wide mb-2">{reg.events.title}</h3>
-                        <div className="flex flex-col gap-1">
-                          <p className="text-sm uppercase tracking-wide font-bold opacity-70 flex items-center gap-2">
-                            <MapPin className="h-4 w-4" />
-                            {reg.events.location}
-                          </p>
-                          {reg.events.instructor && (
-                            <p className="text-sm uppercase tracking-wide font-bold opacity-70">
-                              WITH {reg.events.instructor}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <div className="text-sm font-bold">
-                          <div className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4" />
-                            <span>{formatDate(reg.events.event_date)}</span>
-                          </div>
-                          <div className="flex items-center gap-2 mt-1">
-                            <Clock className="h-4 w-4" />
-                            <span>{reg.events.event_time}</span>
-                          </div>
-                        </div>
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          className="uppercase tracking-ultra-wide font-black"
-                          onClick={() => handleCancelEventRegistration(reg.id)}
-                        >
-                          CANCEL
-                        </Button>
+                <>
+                  {/* Upcoming Events */}
+                  {eventRegistrations.filter(reg => new Date(reg.events.event_date) >= new Date()).length > 0 && (
+                    <div className="mb-6">
+                      <h3 className="text-lg font-black uppercase tracking-wide mb-4 px-6 pt-6">
+                        UPCOMING EVENTS
+                      </h3>
+                      <div className="space-y-0">
+                        {eventRegistrations
+                          .filter(reg => new Date(reg.events.event_date) >= new Date())
+                          .map((reg, index, arr) => (
+                            <div
+                              key={reg.id}
+                              className={`flex flex-col sm:flex-row sm:items-center justify-between p-6 border-foreground gap-4 hover:bg-foreground hover:text-background transition-colors ${
+                                index < arr.length - 1 ? "border-b-4" : ""
+                              }`}
+                            >
+                              <div className="flex-1">
+                                <h3 className="font-black uppercase tracking-wide mb-2">{reg.events.title}</h3>
+                                <div className="flex flex-col gap-1">
+                                  <p className="text-sm uppercase tracking-wide font-bold opacity-70 flex items-center gap-2">
+                                    <MapPin className="h-4 w-4" />
+                                    {reg.events.location}
+                                  </p>
+                                  {reg.events.instructor && (
+                                    <p className="text-sm uppercase tracking-wide font-bold opacity-70">
+                                      WITH {reg.events.instructor}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-4">
+                                <div className="text-sm font-bold">
+                                  <div className="flex items-center gap-2">
+                                    <Calendar className="h-4 w-4" />
+                                    <span>{formatDate(reg.events.event_date)}</span>
+                                  </div>
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <Clock className="h-4 w-4" />
+                                    <span>{reg.events.event_time}</span>
+                                  </div>
+                                </div>
+                                <Button 
+                                  size="sm" 
+                                  variant="outline" 
+                                  className="uppercase tracking-ultra-wide font-black"
+                                  onClick={() => handleCancelEventRegistration(reg.id)}
+                                >
+                                  CANCEL
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
                       </div>
                     </div>
-                  ))}
-                </div>
+                  )}
+
+                  {/* Past Events */}
+                  {eventRegistrations.filter(reg => new Date(reg.events.event_date) < new Date()).length > 0 && (
+                    <div>
+                      <h3 className="text-lg font-black uppercase tracking-wide mb-4 px-6 pt-6 opacity-70">
+                        PAST EVENTS
+                      </h3>
+                      <div className="space-y-0 opacity-60">
+                        {eventRegistrations
+                          .filter(reg => new Date(reg.events.event_date) < new Date())
+                          .map((reg, index, arr) => (
+                            <div
+                              key={reg.id}
+                              className={`flex flex-col sm:flex-row sm:items-center justify-between p-6 border-foreground gap-4 ${
+                                index < arr.length - 1 ? "border-b-4" : ""
+                              }`}
+                            >
+                              <div className="flex-1">
+                                <h3 className="font-black uppercase tracking-wide mb-2">{reg.events.title}</h3>
+                                <div className="flex flex-col gap-1">
+                                  <p className="text-sm uppercase tracking-wide font-bold opacity-70 flex items-center gap-2">
+                                    <MapPin className="h-4 w-4" />
+                                    {reg.events.location}
+                                  </p>
+                                  {reg.events.instructor && (
+                                    <p className="text-sm uppercase tracking-wide font-bold opacity-70">
+                                      WITH {reg.events.instructor}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="text-sm font-bold">
+                                <div className="flex items-center gap-2">
+                                  <Calendar className="h-4 w-4" />
+                                  <span>{formatDate(reg.events.event_date)}</span>
+                                </div>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <Clock className="h-4 w-4" />
+                                  <span>{reg.events.event_time}</span>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
             </CardContent>
           </Card>

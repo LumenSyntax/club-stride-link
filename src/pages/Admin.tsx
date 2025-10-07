@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Plus, Pencil, Trash2, Video } from "lucide-react";
+import { Loader2, Plus, Pencil, Trash2, Video, Users } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
@@ -44,6 +44,16 @@ interface Event {
   location: string;
   max_participants: number;
   instructor?: string;
+  participant_count?: number;
+}
+
+interface EventRegistration {
+  id: string;
+  user_id: string;
+  registered_at: string;
+  profiles: {
+    full_name: string | null;
+  } | null;
 }
 
 export default function Admin() {
@@ -61,6 +71,9 @@ export default function Admin() {
   const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);
   const [selectedClassForParts, setSelectedClassForParts] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [selectedEventForRegistrations, setSelectedEventForRegistrations] = useState<Event | null>(null);
+  const [eventRegistrations, setEventRegistrations] = useState<EventRegistration[]>([]);
+  const [isRegistrationsDialogOpen, setIsRegistrationsDialogOpen] = useState(false);
 
   useEffect(() => {
     if (isAdmin) {
@@ -70,13 +83,27 @@ export default function Admin() {
 
   const loadData = async () => {
     try {
-      const [classesRes, eventsRes] = await Promise.all([
+      const [classesRes, eventsRes, registrationsRes] = await Promise.all([
         supabase.from("classes").select("*").order("upload_date", { ascending: false }),
-        supabase.from("events").select("*").order("event_date", { ascending: true })
+        supabase.from("events").select("*").order("event_date", { ascending: true }),
+        supabase.from("event_registrations").select("event_id")
       ]);
 
       if (classesRes.data) setClasses(classesRes.data);
-      if (eventsRes.data) setEvents(eventsRes.data);
+      
+      // Add participant counts to events
+      if (eventsRes.data && registrationsRes.data) {
+        const participantCounts = registrationsRes.data.reduce((acc, reg) => {
+          acc[reg.event_id] = (acc[reg.event_id] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>);
+
+        const eventsWithCounts = eventsRes.data.map(event => ({
+          ...event,
+          participant_count: participantCounts[event.id] || 0
+        }));
+        setEvents(eventsWithCounts);
+      }
     } catch (error) {
       console.error("Error loading data:", error);
       toast({ title: "Error loading data", variant: "destructive" });
@@ -292,6 +319,41 @@ export default function Admin() {
     } catch (error) {
       console.error("Error deleting event:", error);
       toast({ title: "Error deleting event", variant: "destructive" });
+    }
+  };
+
+  const loadEventRegistrations = async (event: Event) => {
+    try {
+      // First get registrations
+      const { data: registrations, error } = await supabase
+        .from("event_registrations")
+        .select("id, user_id, registered_at")
+        .eq("event_id", event.id);
+
+      if (error) throw error;
+
+      // Then fetch profiles for each user
+      const enrichedRegistrations = await Promise.all(
+        (registrations || []).map(async (reg) => {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("full_name")
+            .eq("id", reg.user_id)
+            .maybeSingle();
+
+          return {
+            ...reg,
+            profiles: profile || { full_name: null }
+          };
+        })
+      );
+
+      setEventRegistrations(enrichedRegistrations);
+      setSelectedEventForRegistrations(event);
+      setIsRegistrationsDialogOpen(true);
+    } catch (error) {
+      console.error("Error loading registrations:", error);
+      toast({ title: "Error loading registrations", variant: "destructive" });
     }
   };
 
@@ -524,9 +586,19 @@ export default function Admin() {
                     <p className="text-sm">Type: {event.event_type === 'live_class' ? 'Live Class' : event.event_type}</p>
                     <p className="text-sm">Location: {event.location}</p>
                     {event.instructor && <p className="text-sm">Instructor: {event.instructor}</p>}
-                    <p className="text-sm">Max: {event.max_participants}</p>
+                    <p className="text-sm font-bold">
+                      Registered: {event.participant_count || 0}/{event.max_participants}
+                    </p>
                   </CardContent>
-                  <CardFooter className="flex gap-2">
+                  <CardFooter className="flex gap-2 flex-wrap">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => loadEventRegistrations(event)}
+                    >
+                      <Users className="h-4 w-4 mr-1" />
+                      View
+                    </Button>
                     <Button
                       size="sm"
                       variant="outline"
@@ -621,6 +693,53 @@ export default function Admin() {
                   </Card>
                 ))}
               </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Event Registrations Dialog */}
+        <Dialog open={isRegistrationsDialogOpen} onOpenChange={setIsRegistrationsDialogOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Event Registrations - {selectedEventForRegistrations?.title}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+                <div>
+                  <p className="text-sm text-muted-foreground">Total Registrations</p>
+                  <p className="text-2xl font-bold">
+                    {eventRegistrations.length} / {selectedEventForRegistrations?.max_participants}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Spots Available</p>
+                  <p className="text-2xl font-bold">
+                    {(selectedEventForRegistrations?.max_participants || 0) - eventRegistrations.length}
+                  </p>
+                </div>
+              </div>
+
+              {eventRegistrations.length === 0 ? (
+                <p className="text-center py-8 text-muted-foreground">No registrations yet</p>
+              ) : (
+                <div className="space-y-2">
+                  {eventRegistrations.map((reg, index) => (
+                    <div
+                      key={reg.id}
+                      className="flex items-center justify-between p-3 border rounded-lg"
+                    >
+                      <div>
+                        <p className="font-semibold">
+                          {reg.profiles?.full_name || `User ${index + 1}`}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Registered: {new Date(reg.registered_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </DialogContent>
         </Dialog>
