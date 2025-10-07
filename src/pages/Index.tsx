@@ -103,38 +103,43 @@ const Index = () => {
           <div className="absolute inset-0 bg-background/95" />
         </div>
 
-        <div className="relative z-10 container mx-auto px-4 text-center">
-          <div className="max-w-5xl mx-auto">
-            <h1 className="text-8xl md:text-[12rem] font-black mb-8 leading-none tracking-normal font-display">
-              ELIT<span className="inline-block scale-x-[-1]">E</span>
-            </h1>
-            <p className="text-3xl md:text-4xl font-black uppercase tracking-ultra-wide mb-6">
-              RUN CLUB
-            </p>
-            <p className="text-xl md:text-2xl text-foreground mb-16 max-w-2xl mx-auto uppercase tracking-wide font-bold">
-              TRAE TU MEJOR ACTITUD. JOIN THE COMMUNITY.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-6 justify-center">
-              <Button size="lg" className="uppercase tracking-ultra-wide font-black text-lg" asChild>
-                <Link to="/auth">
-                  JOIN NOW
-                  <ArrowRight className="ml-2 h-6 w-6" />
-                </Link>
-              </Button>
-              <Button 
-                variant="outline" 
-                size="lg" 
-                className="uppercase tracking-ultra-wide font-black text-lg"
-                asChild
-              >
-                <a href="https://loselitemerch2.itemorder.com/shop/home/" target="_blank" rel="noopener noreferrer">
-                  SHOP MERCH
-                </a>
-              </Button>
+        <div className="relative z-10 container mx-auto px-4">
+          <div className="flex flex-col justify-center items-center min-h-screen">
+            {/* Main Hero Content - Centered */}
+            <div className="flex-1 flex items-center justify-center w-full">
+              <div className="max-w-5xl mx-auto text-center">
+                <h1 className="text-8xl md:text-[12rem] font-black mb-8 leading-none tracking-normal font-display">
+                  ELIT<span className="inline-block scale-x-[-1]">E</span>
+                </h1>
+                <p className="text-3xl md:text-4xl font-black uppercase tracking-ultra-wide mb-6">
+                  RUN CLUB
+                </p>
+                <p className="text-xl md:text-2xl text-foreground mb-16 max-w-2xl mx-auto uppercase tracking-wide font-bold">
+                  TRAE TU MEJOR ACTITUD. JOIN THE COMMUNITY.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-6 justify-center">
+                  <Button size="lg" className="uppercase tracking-ultra-wide font-black text-lg" asChild>
+                    <Link to="/auth">
+                      JOIN NOW
+                      <ArrowRight className="ml-2 h-6 w-6" />
+                    </Link>
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="lg" 
+                    className="uppercase tracking-ultra-wide font-black text-lg"
+                    asChild
+                  >
+                    <a href="https://loselitemerch2.itemorder.com/shop/home/" target="_blank" rel="noopener noreferrer">
+                      SHOP MERCH
+                    </a>
+                  </Button>
+                </div>
+              </div>
             </div>
             
-            {/* Partnership Section */}
-            <div className="mt-12 pt-10 border-t-4 border-foreground/20 max-w-2xl mx-auto">
+            {/* Partnership Section - Bottom */}
+            <div className="w-full pb-12 max-w-2xl mx-auto">
               <div className="flex items-center justify-center gap-2 mb-3">
                 <Tag className="h-5 w-5" />
                 <p className="text-xs font-black uppercase tracking-ultra-wide text-muted-foreground">
