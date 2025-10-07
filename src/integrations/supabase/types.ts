@@ -58,12 +58,52 @@ export type Database = {
           },
         ]
       }
+      class_purchases: {
+        Row: {
+          amount_paid: number
+          class_id: string
+          created_at: string
+          id: string
+          purchase_date: string
+          stripe_payment_intent_id: string | null
+          user_id: string
+        }
+        Insert: {
+          amount_paid: number
+          class_id: string
+          created_at?: string
+          id?: string
+          purchase_date?: string
+          stripe_payment_intent_id?: string | null
+          user_id: string
+        }
+        Update: {
+          amount_paid?: number
+          class_id?: string
+          created_at?: string
+          id?: string
+          purchase_date?: string
+          stripe_payment_intent_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_purchases_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       classes: {
         Row: {
           created_at: string
           description: string | null
           id: string
           instructor: string
+          is_free: boolean | null
+          price: number | null
           thumbnail_url: string | null
           title: string
           updated_at: string
@@ -74,6 +114,8 @@ export type Database = {
           description?: string | null
           id?: string
           instructor: string
+          is_free?: boolean | null
+          price?: number | null
           thumbnail_url?: string | null
           title: string
           updated_at?: string
@@ -84,6 +126,8 @@ export type Database = {
           description?: string | null
           id?: string
           instructor?: string
+          is_free?: boolean | null
+          price?: number | null
           thumbnail_url?: string | null
           title?: string
           updated_at?: string
@@ -206,6 +250,54 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      video_access_logs: {
+        Row: {
+          accessed_at: string
+          class_id: string
+          class_part_id: string
+          id: string
+          ip_address: string | null
+          signed_url_expires_at: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          accessed_at?: string
+          class_id: string
+          class_part_id: string
+          id?: string
+          ip_address?: string | null
+          signed_url_expires_at: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          accessed_at?: string
+          class_id?: string
+          class_part_id?: string
+          id?: string
+          ip_address?: string | null
+          signed_url_expires_at?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "video_access_logs_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "video_access_logs_class_part_id_fkey"
+            columns: ["class_part_id"]
+            isOneToOne: false
+            referencedRelation: "class_parts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

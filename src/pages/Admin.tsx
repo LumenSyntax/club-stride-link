@@ -20,6 +20,8 @@ interface Class {
   instructor: string;
   upload_date: string;
   thumbnail_url?: string;
+  price?: number;
+  is_free?: boolean;
 }
 
 interface ClassPart {
@@ -138,12 +140,17 @@ export default function Admin() {
       if (uploadedUrl) thumbnailUrl = uploadedUrl;
     }
 
+    const isFree = formData.get('is_free') === 'on';
+    const price = isFree ? 0 : parseFloat(formData.get('price') as string);
+
     const classData = {
       title: formData.get('title') as string,
       description: formData.get('description') as string,
       instructor: formData.get('instructor') as string,
       upload_date: formData.get('upload_date') as string,
-      thumbnail_url: thumbnailUrl
+      thumbnail_url: thumbnailUrl,
+      price,
+      is_free: isFree
     };
 
     try {
@@ -351,6 +358,23 @@ export default function Admin() {
                         <p className="text-sm text-muted-foreground mt-1">Current thumbnail will be kept if no new image is uploaded</p>
                       )}
                     </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="price">Price (USD)</Label>
+                        <Input id="price" name="price" type="number" step="0.01" min="0" defaultValue={editingClass?.price || 0} />
+                        <p className="text-sm text-muted-foreground mt-1">Set to 0 for free classes</p>
+                      </div>
+                      <div className="flex items-center space-x-2 pt-8">
+                        <input 
+                          id="is_free" 
+                          name="is_free" 
+                          type="checkbox" 
+                          defaultChecked={editingClass?.is_free ?? true}
+                          className="h-4 w-4"
+                        />
+                        <Label htmlFor="is_free">Make this class free</Label>
+                      </div>
+                    </div>
                     <div className="flex gap-2">
                       <Button type="submit" disabled={uploading}>
                         {uploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
@@ -377,6 +401,9 @@ export default function Admin() {
                     )}
                     <p className="text-sm text-muted-foreground">Instructor: {cls.instructor}</p>
                     <p className="text-sm">Upload Date: {cls.upload_date}</p>
+                    <p className="text-sm font-bold">
+                      {cls.is_free ? 'FREE' : `$${cls.price?.toFixed(2)}`}
+                    </p>
                     {cls.description && <p className="text-sm text-muted-foreground mt-2">{cls.description}</p>}
                   </CardContent>
                   <CardFooter className="flex gap-2">
