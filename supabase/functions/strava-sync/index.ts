@@ -6,6 +6,25 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Map Strava activity types to database enum values
+function mapStravaActivityType(stravaType: string): string {
+  const typeMap: Record<string, string> = {
+    'Run': 'running',
+    'Ride': 'cycling',
+    'Swim': 'swimming',
+    'Walk': 'walking',
+    'Hike': 'walking',
+    'Yoga': 'yoga',
+    'Workout': 'strength',
+    'WeightTraining': 'strength',
+    'Crossfit': 'hiit',
+    'HIIT': 'hiit',
+    // Add more mappings as needed
+  };
+
+  return typeMap[stravaType] || 'other';
+}
+
 async function refreshStravaToken(refreshToken: string) {
   const response = await fetch('https://www.strava.com/oauth/token', {
     method: 'POST',
@@ -112,7 +131,7 @@ serve(async (req) => {
           .insert({
             user_id: user.id,
             title: activity.name,
-            activity_type: activity.type.toLowerCase(),
+            activity_type: mapStravaActivityType(activity.type),
             activity_date: activity.start_date.split('T')[0],
             duration: Math.round(activity.moving_time / 60), // Convert seconds to minutes
             distance: activity.distance / 1000, // Convert meters to km
@@ -121,8 +140,11 @@ serve(async (req) => {
             strava_activity_id: activity.id
           });
 
-        if (!insertError) {
+        if (insertError) {
+          console.error('Failed to insert activity:', activity.name, insertError);
+        } else {
           syncedCount++;
+          console.log('Synced activity:', activity.name, 'Type:', activity.type);
         }
       }
     }
