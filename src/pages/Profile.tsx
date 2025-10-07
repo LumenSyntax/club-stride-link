@@ -44,7 +44,7 @@ const Profile = () => {
   const [activityStats, setActivityStats] = useState({ count: 0, duration: 0 });
   const [isStravaConnected, setIsStravaConnected] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
-  const [monthlyProgress, setMonthlyProgress] = useState<{ month: string; minutes: number }[]>([]);
+  const [weeklyProgress, setWeeklyProgress] = useState<{ week: string; miles: number }[]>([]);
 
 
   useEffect(() => {
@@ -96,7 +96,7 @@ const Profile = () => {
     try {
       const { data } = await supabase
         .from("activities")
-        .select("duration, activity_date")
+        .select("duration, distance, activity_date")
         .eq("user_id", user.id);
 
       if (data) {
@@ -105,33 +105,39 @@ const Profile = () => {
           duration: data.reduce((sum, a) => sum + (a.duration || 0), 0),
         });
 
-        // Calculate monthly progress for the last 6 months
-        const monthlyData: Record<string, number> = {};
+        // Calculate weekly progress for the last 7 weeks
+        const weeklyData: Record<string, number> = {};
         const now = new Date();
         
-        // Initialize last 6 months
-        for (let i = 5; i >= 0; i--) {
-          const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-          const monthKey = date.toLocaleDateString('en-US', { month: 'short' });
-          monthlyData[monthKey] = 0;
+        // Initialize last 7 weeks
+        for (let i = 6; i >= 0; i--) {
+          const weekStart = new Date(now);
+          weekStart.setDate(now.getDate() - (i * 7));
+          const weekLabel = `Week ${7 - i}`;
+          weeklyData[weekLabel] = 0;
         }
 
-        // Aggregate activity durations by month
+        // Aggregate activity distances by week
         data.forEach((activity) => {
           const activityDate = new Date(activity.activity_date);
-          const monthKey = activityDate.toLocaleDateString('en-US', { month: 'short' });
-          if (monthKey in monthlyData) {
-            monthlyData[monthKey] += activity.duration || 0;
+          const daysDiff = Math.floor((now.getTime() - activityDate.getTime()) / (1000 * 60 * 60 * 24));
+          const weekIndex = Math.floor(daysDiff / 7);
+          
+          if (weekIndex >= 0 && weekIndex < 7) {
+            const weekLabel = `Week ${7 - weekIndex}`;
+            // Convert km to miles (1 km = 0.621371 miles)
+            const miles = (activity.distance || 0) * 0.621371;
+            weeklyData[weekLabel] += miles;
           }
         });
 
         // Convert to chart format
-        const chartData = Object.entries(monthlyData).map(([month, minutes]) => ({
-          month,
-          minutes: Math.round(minutes),
+        const chartData = Object.entries(weeklyData).map(([week, miles]) => ({
+          week,
+          miles: Math.round(miles * 10) / 10, // Round to 1 decimal place
         }));
 
-        setMonthlyProgress(chartData);
+        setWeeklyProgress(chartData);
       }
     } catch (error) {
       console.error("Error loading activity stats:", error);
@@ -428,26 +434,26 @@ const Profile = () => {
             })}
           </div>
 
-          {/* Monthly Progress Chart */}
+          {/* Weekly Progress Chart */}
           <Card className="border-4 mb-8">
             <CardHeader>
               <CardTitle className="text-2xl font-black uppercase tracking-ultra-wide font-display">
-                MONTHLY PROGRESS
+                WEEKLY PROGRESS
               </CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={monthlyProgress}>
+                <LineChart data={weeklyProgress}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                   <XAxis 
-                    dataKey="month" 
+                    dataKey="week" 
                     stroke="hsl(var(--foreground))"
                     style={{ fontSize: '12px', fontWeight: 'bold' }}
                   />
                   <YAxis 
                     stroke="hsl(var(--foreground))"
                     style={{ fontSize: '12px', fontWeight: 'bold' }}
-                    label={{ value: 'MINUTES', angle: -90, position: 'insideLeft', style: { fontWeight: 'bold' } }}
+                    label={{ value: 'MILES', angle: -90, position: 'insideLeft', style: { fontWeight: 'bold' } }}
                   />
                   <Tooltip 
                     contentStyle={{ 
@@ -458,7 +464,7 @@ const Profile = () => {
                   />
                   <Line 
                     type="monotone" 
-                    dataKey="minutes" 
+                    dataKey="miles" 
                     stroke="hsl(var(--foreground))" 
                     strokeWidth={4}
                     dot={{ fill: 'hsl(var(--foreground))', strokeWidth: 2, r: 6 }}
