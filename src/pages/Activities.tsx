@@ -10,7 +10,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
-import { Plus, Calendar, Clock, MapPin, Flame, TrendingUp, Activity as ActivityIcon, Trash2, Edit } from "lucide-react";
+import { Plus, Calendar, Clock, MapPin, Flame, TrendingUp, Activity as ActivityIcon, Trash2, Edit, ExternalLink } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 
 interface Activity {
@@ -23,6 +24,7 @@ interface Activity {
   calories: number | null;
   activity_date: string;
   created_at: string;
+  strava_activity_id: number | null;
 }
 
 const activityTypes = [
@@ -163,7 +165,16 @@ export default function Activities() {
     }
   };
 
-  const handleDeleteActivity = async (id: string) => {
+  const handleDeleteActivity = async (id: string, isStravaActivity: boolean) => {
+    if (isStravaActivity) {
+      toast({
+        title: "Cannot delete Strava activity",
+        description: "Strava-synced activities must be deleted from Strava",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!confirm("Are you sure you want to delete this activity?")) return;
 
     try {
@@ -187,6 +198,14 @@ export default function Activities() {
   };
 
   const openEditDialog = (activity: Activity) => {
+    if (activity.strava_activity_id) {
+      toast({
+        title: "Cannot edit Strava activity",
+        description: "Strava-synced activities must be edited on Strava",
+        variant: "destructive",
+      });
+      return;
+    }
     setEditingActivity(activity);
     setIsDialogOpen(true);
   };
@@ -414,6 +433,8 @@ export default function Activities() {
               <div className="space-y-4">
                 {activities.map((activity) => {
                   const activityType = activityTypes.find(t => t.value === activity.activity_type);
+                  const isStravaActivity = !!activity.strava_activity_id;
+                  
                   return (
                     <div
                       key={activity.id}
@@ -423,7 +444,17 @@ export default function Activities() {
                         <div className="flex items-start gap-3 flex-1">
                           <div className="text-3xl">{activityType?.icon}</div>
                           <div className="flex-1">
-                            <h3 className="font-semibold text-lg">{activity.title}</h3>
+                            <div className="flex items-center gap-2 mb-1">
+                              <h3 className="font-semibold text-lg">{activity.title}</h3>
+                              {isStravaActivity && (
+                                <Badge variant="secondary" className="text-xs">
+                                  <svg className="w-3 h-3 mr-1" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"/>
+                                  </svg>
+                                  Strava
+                                </Badge>
+                              )}
+                            </div>
                             <p className="text-sm text-muted-foreground mb-2">
                               {activityType?.label} • {format(new Date(activity.activity_date), 'MMM dd, yyyy')}
                             </p>
@@ -453,17 +484,31 @@ export default function Activities() {
                           </div>
                         </div>
                         <div className="flex gap-2">
+                          {isStravaActivity ? (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => window.open(`https://www.strava.com/activities/${activity.strava_activity_id}`, '_blank')}
+                              title="View on Strava"
+                            >
+                              <ExternalLink className="h-4 w-4" />
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => openEditDialog(activity)}
+                              title="Edit activity"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          )}
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => openEditDialog(activity)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleDeleteActivity(activity.id)}
+                            onClick={() => handleDeleteActivity(activity.id, isStravaActivity)}
+                            title={isStravaActivity ? "Cannot delete Strava activities" : "Delete activity"}
+                            className={isStravaActivity ? "opacity-50 cursor-not-allowed" : ""}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
