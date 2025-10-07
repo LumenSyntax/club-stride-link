@@ -85,12 +85,11 @@ const Index = () => {
               TRAE TU MEJOR ACTITUD. JOIN THE COMMUNITY.
             </p>
             <div className="flex flex-col sm:flex-row gap-6 justify-center">
-              <Button size="lg" className="uppercase tracking-ultra-wide font-black text-lg">
-                JOIN NOW
-                <ArrowRight className="ml-2 h-6 w-6" />
-              </Button>
-              <Button variant="outline" size="lg" className="uppercase tracking-ultra-wide font-black text-lg">
-                EXPLORE
+              <Button size="lg" className="uppercase tracking-ultra-wide font-black text-lg" asChild>
+                <Link to="/auth">
+                  JOIN NOW
+                  <ArrowRight className="ml-2 h-6 w-6" />
+                </Link>
               </Button>
               <Button 
                 variant="outline" 
