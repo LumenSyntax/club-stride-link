@@ -256,7 +256,7 @@ export default function Activities() {
                 Log Activity
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto z-50">
               <DialogHeader>
                 <DialogTitle>{editingActivity ? "Edit Activity" : "Log New Activity"}</DialogTitle>
                 <DialogDescription>
@@ -271,7 +271,7 @@ export default function Activities() {
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="z-[60]">
                       {activityTypes.map((type) => (
                         <SelectItem key={type.value} value={type.value}>
                           {type.icon} {type.label}
