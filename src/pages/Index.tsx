@@ -134,35 +134,35 @@ const Index = () => {
             </div>
             
             {/* Partnership Section */}
-            <div className="mt-16 pt-12 border-t-4 border-foreground/20 max-w-3xl mx-auto">
-              <div className="flex items-center justify-center gap-3 mb-4">
-                <Tag className="h-6 w-6" />
-                <p className="text-sm font-black uppercase tracking-ultra-wide text-muted-foreground">
+            <div className="mt-12 pt-10 border-t-4 border-foreground/20 max-w-2xl mx-auto">
+              <div className="flex items-center justify-center gap-2 mb-3">
+                <Tag className="h-5 w-5" />
+                <p className="text-xs font-black uppercase tracking-ultra-wide text-muted-foreground">
                   Official Partner
                 </p>
               </div>
-              <div className="bg-foreground/5 border-4 border-foreground/10 p-8">
-                <p className="text-xl md:text-2xl font-black uppercase tracking-wide mb-3">
+              <div className="bg-foreground/5 border-4 border-foreground/10 p-6">
+                <p className="text-lg md:text-xl font-black uppercase tracking-wide mb-2">
                   RAWPR NUTRITION
                 </p>
-                <p className="text-sm md:text-base uppercase tracking-wide font-bold text-muted-foreground mb-4">
+                <p className="text-xs md:text-sm uppercase tracking-wide font-bold text-muted-foreground mb-3">
                   Premium supplements for elite athletes
                 </p>
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                   <Button 
                     variant="default" 
-                    size="lg"
-                    className="uppercase tracking-ultra-wide font-black"
+                    size="default"
+                    className="uppercase tracking-ultra-wide font-black text-sm"
                     asChild
                   >
                     <a href="https://www.rawpr.shop/" target="_blank" rel="noopener noreferrer">
                       SHOP NOW
-                      <ArrowRight className="ml-2 h-5 w-5" />
+                      <ArrowRight className="ml-2 h-4 w-4" />
                     </a>
                   </Button>
-                  <div className="bg-primary text-primary-foreground px-6 py-3 border-4 border-foreground">
-                    <p className="text-sm font-black uppercase tracking-ultra-wide">
-                      USE CODE: <span className="text-lg">ELITE</span>
+                  <div className="bg-primary text-primary-foreground px-5 py-2 border-4 border-foreground">
+                    <p className="text-xs font-black uppercase tracking-ultra-wide">
+                      USE CODE: <span className="text-base">ELITE</span>
                     </p>
                   </div>
                 </div>
