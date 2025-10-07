@@ -76,7 +76,7 @@ const Index = () => {
         <div className="relative z-10 container mx-auto px-4 text-center">
           <div className="max-w-4xl mx-auto">
             <h1 className="text-7xl md:text-9xl font-black mb-6 leading-none tracking-tight">
-              ELIT3
+              ELIT<span className="inline-block scale-x-[-1]">E</span>
             </h1>
             <p className="text-xl md:text-2xl font-bold uppercase tracking-wider mb-4">
               Run Club

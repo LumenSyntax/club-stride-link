@@ -20,7 +20,7 @@ const Navigation = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <Link to="/" className="text-2xl font-black tracking-tighter">
-            ELIT<span className="font-black">3</span>
+            ELIT<span className="inline-block scale-x-[-1]">E</span>
           </Link>
 
           {/* Desktop Navigation */}
