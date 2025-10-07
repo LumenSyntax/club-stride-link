@@ -238,7 +238,7 @@ export default function Activities() {
     <div className="min-h-screen bg-background">
       <Navigation />
       
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 pt-28">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
