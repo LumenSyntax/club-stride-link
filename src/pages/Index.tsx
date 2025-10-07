@@ -352,7 +352,7 @@ const Index = () => {
                 className="uppercase tracking-ultra-wide font-black text-lg h-16 px-10"
                 asChild
               >
-                <a href="https://www.instagram.com/p/DN6N87FifZO/?img_index=11" target="_blank" rel="noopener noreferrer">
+                <a href="https://www.instagram.com/eliterunclubpr?utm_source=ig_web_button_share_sheet&igsh=NXBud2s0NHdtNW9u" target="_blank" rel="noopener noreferrer">
                   FOLLOW ON INSTAGRAM
                   <ArrowRight className="ml-3 h-6 w-6" />
                 </a>
