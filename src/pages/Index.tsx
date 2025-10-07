@@ -65,32 +65,32 @@ const Index = () => {
       <Navigation />
 
       {/* Hero Section */}
-      <section className="relative h-[90vh] flex items-center justify-center overflow-hidden bg-background">
+      <section className="relative h-screen flex items-center justify-center overflow-hidden bg-background border-b-4 border-foreground">
         <div
-          className="absolute inset-0 bg-cover bg-center grayscale"
+          className="absolute inset-0 bg-cover bg-center saturate-0 contrast-150"
           style={{ backgroundImage: `url(${heroImage})` }}
         >
-          <div className="absolute inset-0 bg-background/90" />
+          <div className="absolute inset-0 bg-background/95" />
         </div>
 
         <div className="relative z-10 container mx-auto px-4 text-center">
-          <div className="max-w-4xl mx-auto">
-            <h1 className="text-7xl md:text-9xl font-black mb-6 leading-none tracking-tight">
+          <div className="max-w-5xl mx-auto">
+            <h1 className="text-8xl md:text-[12rem] font-black mb-8 leading-none tracking-ultra-wide font-display">
               ELIT<span className="inline-block scale-x-[-1]">E</span>
             </h1>
-            <p className="text-xl md:text-2xl font-bold uppercase tracking-wider mb-4">
-              Run Club
+            <p className="text-3xl md:text-4xl font-black uppercase tracking-ultra-wide mb-6">
+              RUN CLUB
             </p>
-            <p className="text-lg md:text-xl text-muted-foreground mb-12 max-w-2xl mx-auto">
-              Trae tu mejor actitud. Join the community.
+            <p className="text-xl md:text-2xl text-foreground mb-16 max-w-2xl mx-auto uppercase tracking-wide font-bold">
+              TRAE TU MEJOR ACTITUD. JOIN THE COMMUNITY.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="uppercase tracking-wider font-bold">
-                Join Now
-                <ArrowRight className="ml-2 h-5 w-5" />
+            <div className="flex flex-col sm:flex-row gap-6 justify-center">
+              <Button size="lg" className="uppercase tracking-ultra-wide font-black text-lg">
+                JOIN NOW
+                <ArrowRight className="ml-2 h-6 w-6" />
               </Button>
-              <Button variant="outline" size="lg" className="uppercase tracking-wider font-bold">
-                Explore
+              <Button variant="outline" size="lg" className="uppercase tracking-ultra-wide font-black text-lg">
+                EXPLORE
               </Button>
             </div>
           </div>
@@ -98,29 +98,29 @@ const Index = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 border-t border-border">
+      <section className="py-24 border-t-4 border-border">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight mb-4">Why ELIT<span className="inline-block scale-x-[-1]">E</span>?</h2>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto uppercase tracking-wide">
-                Everything you need to elevate your performance
+            <div className="text-center mb-20">
+              <h2 className="text-5xl md:text-7xl font-black uppercase tracking-ultra-wide mb-6 font-display">WHY ELIT<span className="inline-block scale-x-[-1]">E</span>?</h2>
+              <p className="text-xl text-foreground max-w-2xl mx-auto uppercase tracking-wide font-bold">
+                EVERYTHING YOU NEED TO ELEVATE YOUR PERFORMANCE
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-0">
               {features.map((feature, index) => {
                 const Icon = feature.icon;
                 return (
                   <div
                     key={index}
-                    className="group p-8 border-2 border-border bg-card transition-all duration-300 hover:border-foreground hover:shadow-elegant"
+                    className="group p-12 border-4 border-border bg-card hover:bg-foreground hover:text-background"
                   >
-                    <div className="mb-6 inline-flex p-4 bg-foreground">
-                      <Icon className="h-8 w-8 text-background" />
+                    <div className="mb-8 inline-flex p-6 bg-foreground group-hover:bg-background border-4 border-foreground">
+                      <Icon className="h-12 w-12 text-background group-hover:text-foreground" />
                     </div>
-                    <h3 className="text-xl font-black uppercase mb-3">{feature.title}</h3>
-                    <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
+                    <h3 className="text-2xl font-black uppercase mb-4 tracking-wide">{feature.title}</h3>
+                    <p className="leading-relaxed uppercase text-sm tracking-wide">{feature.description}</p>
                   </div>
                 );
               })}
@@ -130,23 +130,23 @@ const Index = () => {
       </section>
 
       {/* Featured Classes */}
-      <section className="py-20 border-t border-border">
+      <section className="py-24 border-t-4 border-border">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
-            <div className="flex items-center justify-between mb-12">
+            <div className="flex items-center justify-between mb-16">
               <div>
-                <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight mb-2">Featured</h2>
-                <p className="text-muted-foreground uppercase tracking-wide">This Week's Sessions</p>
+                <h2 className="text-5xl md:text-7xl font-black uppercase tracking-ultra-wide mb-3 font-display">FEATURED</h2>
+                <p className="text-foreground uppercase tracking-ultra-wide font-bold">THIS WEEK'S SESSIONS</p>
               </div>
               <Link to="/classes">
-                <Button variant="ghost" className="uppercase tracking-wider font-bold">
-                  View All
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                <Button variant="ghost" className="uppercase tracking-ultra-wide font-black">
+                  VIEW ALL
+                  <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-0">
               {featuredClasses.map((classItem) => (
                 <ClassCard key={classItem.id} {...classItem} />
               ))}
@@ -156,18 +156,18 @@ const Index = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-32 border-t-4 border-foreground bg-foreground">
+      <section className="py-40 border-t-4 border-foreground bg-foreground">
         <div className="container mx-auto px-4 text-center">
-          <div className="max-w-3xl mx-auto">
-            <h2 className="text-5xl md:text-7xl font-black mb-6 text-background uppercase tracking-tight">
-              Ready to Run?
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-6xl md:text-9xl font-black mb-8 text-background uppercase tracking-ultra-wide font-display leading-none">
+              READY TO RUN?
             </h2>
-            <p className="text-xl text-background/80 mb-8 uppercase tracking-wide font-bold">
-              Join the community. Elevate your performance.
+            <p className="text-2xl md:text-3xl text-background mb-12 uppercase tracking-ultra-wide font-black">
+              JOIN THE COMMUNITY. ELEVATE YOUR PERFORMANCE.
             </p>
-            <Button size="lg" variant="secondary" className="shadow-elegant uppercase tracking-wider font-bold text-lg">
-              Get Started
-              <ArrowRight className="ml-2 h-5 w-5" />
+            <Button size="lg" variant="secondary" className="uppercase tracking-ultra-wide font-black text-xl h-20 px-12">
+              GET STARTED
+              <ArrowRight className="ml-3 h-7 w-7" />
             </Button>
           </div>
         </div>

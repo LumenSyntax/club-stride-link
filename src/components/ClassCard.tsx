@@ -25,27 +25,27 @@ const ClassCard = ({
   image,
 }: ClassCardProps) => {
   return (
-    <Card className="group overflow-hidden border-2 border-border transition-all duration-300 hover:border-foreground hover:shadow-elegant bg-card">
-      <div className="relative h-48 overflow-hidden">
+    <Card className="group overflow-hidden hover:border-foreground bg-card">
+      <div className="relative h-48 overflow-hidden border-b-4 border-border">
         <img
           src={image}
           alt={title}
-          className="w-full h-full object-cover grayscale transition-all duration-300 group-hover:scale-110 group-hover:grayscale-0"
+          className="w-full h-full object-cover contrast-125 saturate-0"
         />
         <Badge
-          className={`absolute top-4 right-4 uppercase tracking-wider font-bold ${
+          className={`absolute top-4 right-4 uppercase tracking-ultra-wide font-bold border-4 ${
             type === "livestream"
-              ? "bg-foreground text-background"
-              : "bg-muted text-foreground"
+              ? "bg-foreground text-background border-foreground"
+              : "bg-background text-foreground border-foreground"
           }`}
         >
-          {type === "livestream" ? "LIVE" : "On-Demand"}
+          {type === "livestream" ? "LIVE" : "ON-DEMAND"}
         </Badge>
       </div>
 
       <CardHeader>
-        <CardTitle className="text-xl font-black uppercase">{title}</CardTitle>
-        <p className="text-sm text-muted-foreground uppercase tracking-wide">with {instructor}</p>
+        <CardTitle className="text-2xl font-black uppercase tracking-wide">{title}</CardTitle>
+        <p className="text-sm text-muted-foreground uppercase tracking-ultra-wide">WITH {instructor}</p>
       </CardHeader>
 
       <CardContent className="space-y-3">
@@ -66,8 +66,8 @@ const ClassCard = ({
       </CardContent>
 
       <CardFooter>
-        <Button className="w-full uppercase tracking-wider font-bold">
-          {type === "livestream" ? "Join Live" : "Watch Now"}
+        <Button className="w-full uppercase tracking-ultra-wide font-black">
+          {type === "livestream" ? "JOIN LIVE" : "WATCH NOW"}
         </Button>
       </CardFooter>
     </Card>

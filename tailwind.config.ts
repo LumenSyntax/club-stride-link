@@ -14,7 +14,11 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['Oswald', 'system-ui', 'sans-serif'],
+        display: ['Anton', 'Oswald', 'system-ui', 'sans-serif'],
+      },
+      letterSpacing: {
+        'ultra-wide': '0.3em',
       },
       colors: {
         border: "hsl(var(--border))",
