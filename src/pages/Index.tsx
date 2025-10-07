@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Award, Play, Users, Video } from "lucide-react";
+import { ArrowRight, Award, Play, Users, Video, Tag } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -131,6 +131,42 @@ const Index = () => {
                   SHOP MERCH
                 </a>
               </Button>
+            </div>
+            
+            {/* Partnership Section */}
+            <div className="mt-16 pt-12 border-t-4 border-foreground/20 max-w-3xl mx-auto">
+              <div className="flex items-center justify-center gap-3 mb-4">
+                <Tag className="h-6 w-6" />
+                <p className="text-sm font-black uppercase tracking-ultra-wide text-muted-foreground">
+                  Official Partner
+                </p>
+              </div>
+              <div className="bg-foreground/5 border-4 border-foreground/10 p-8">
+                <p className="text-xl md:text-2xl font-black uppercase tracking-wide mb-3">
+                  RAWPR NUTRITION
+                </p>
+                <p className="text-sm md:text-base uppercase tracking-wide font-bold text-muted-foreground mb-4">
+                  Premium supplements for elite athletes
+                </p>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                  <Button 
+                    variant="default" 
+                    size="lg"
+                    className="uppercase tracking-ultra-wide font-black"
+                    asChild
+                  >
+                    <a href="https://www.rawpr.shop/" target="_blank" rel="noopener noreferrer">
+                      SHOP NOW
+                      <ArrowRight className="ml-2 h-5 w-5" />
+                    </a>
+                  </Button>
+                  <div className="bg-primary text-primary-foreground px-6 py-3 border-4 border-foreground">
+                    <p className="text-sm font-black uppercase tracking-ultra-wide">
+                      USE CODE: <span className="text-lg">ELITE</span>
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
