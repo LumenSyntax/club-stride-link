@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navigation from "@/components/Navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,13 +18,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar as CalendarIcon, Clock, MapPin, Users, LayoutGrid, List } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, MapPin, Users, LayoutGrid, List, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "@/hooks/use-toast";
 
 interface Event {
-  id: number;
+  id: string;
   title: string;
-  type: "running" | "hiit" | "strength" | "social";
+  type: string;
   date: Date;
   time: string;
   location: string;
@@ -35,85 +37,70 @@ interface Event {
 }
 
 const Events = () => {
+  const { user } = useAuth();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [filterType, setFilterType] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"calendar" | "list">("calendar");
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const events: Event[] = [
-    {
-      id: 1,
-      title: "Morning Power Run",
-      type: "running",
-      date: new Date(2025, 0, 15),
-      time: "06:00 AM",
-      location: "Central Park",
-      instructor: "Mike Chen",
-      participants: 12,
-      maxParticipants: 20,
-      description: "High-intensity morning run focusing on speed and endurance. Perfect for all levels.",
-    },
-    {
-      id: 2,
-      title: "HIIT Bootcamp",
-      type: "hiit",
-      date: new Date(2025, 0, 16),
-      time: "07:00 AM",
-      location: "Riverside Gym",
-      instructor: "Sarah Johnson",
-      participants: 18,
-      maxParticipants: 25,
-      description: "Intense 45-minute HIIT session combining cardio and strength training.",
-    },
-    {
-      id: 3,
-      title: "Strength & Conditioning",
-      type: "strength",
-      date: new Date(2025, 0, 17),
-      time: "06:30 PM",
-      location: "Main Studio",
-      instructor: "Alex Rodriguez",
-      participants: 15,
-      maxParticipants: 20,
-      description: "Build muscle and improve overall strength with guided weightlifting.",
-    },
-    {
-      id: 4,
-      title: "Runner's Social Meetup",
-      type: "social",
-      date: new Date(2025, 0, 18),
-      time: "07:00 PM",
-      location: "The Runner's Café",
-      participants: 25,
-      maxParticipants: 40,
-      description: "Casual meetup for runners to connect, share experiences, and plan future runs.",
-    },
-    {
-      id: 5,
-      title: "Trail Running Adventure",
-      type: "running",
-      date: new Date(2025, 0, 20),
-      time: "08:00 AM",
-      location: "Mountain Trail",
-      instructor: "Emma Davis",
-      participants: 8,
-      maxParticipants: 15,
-      description: "Explore scenic trails while building endurance and enjoying nature.",
-    },
-    {
-      id: 6,
-      title: "Core & Stability",
-      type: "strength",
-      date: new Date(2025, 0, 22),
-      time: "06:00 PM",
-      location: "Main Studio",
-      instructor: "Chris Lee",
-      participants: 20,
-      maxParticipants: 25,
-      description: "Focus on core strength and stability exercises for better running performance.",
-    },
-  ];
+  useEffect(() => {
+    loadEvents();
+  }, []);
+
+  const loadEvents = async () => {
+    try {
+      setLoading(true);
+      
+      // Fetch events from database
+      const { data: eventsData, error: eventsError } = await supabase
+        .from("events")
+        .select("*")
+        .order("event_date", { ascending: true });
+
+      if (eventsError) throw eventsError;
+
+      // Fetch registration counts for each event
+      const { data: registrations, error: regError } = await supabase
+        .from("event_registrations")
+        .select("event_id");
+
+      if (regError) throw regError;
+
+      // Count participants per event
+      const participantCounts = registrations.reduce((acc, reg) => {
+        acc[reg.event_id] = (acc[reg.event_id] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+
+      // Transform events to match UI interface
+      const transformedEvents: Event[] = eventsData.map((event) => ({
+        id: event.id,
+        title: event.title,
+        type: event.event_type,
+        date: new Date(event.event_date),
+        time: event.event_time,
+        location: event.location,
+        instructor: event.instructor || undefined,
+        participants: participantCounts[event.id] || 0,
+        maxParticipants: event.max_participants,
+        description: event.description || "",
+      }));
+
+      setEvents(transformedEvents);
+    } catch (error) {
+      console.error("Error loading events:", error);
+      toast({
+        title: "Error loading events",
+        description: "Could not load events. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredEvents = events.filter((event) => {
     if (filterType === "all") return true;
@@ -161,8 +148,14 @@ const Events = () => {
             </p>
           </div>
 
-          {/* Filters and View Toggle */}
-          <div className="flex flex-col sm:flex-row gap-4 mb-8">
+          {loading ? (
+            <div className="flex items-center justify-center py-20">
+              <Loader2 className="h-12 w-12 animate-spin text-foreground" />
+            </div>
+          ) : (
+            <>
+              {/* Filters and View Toggle */}
+              <div className="flex flex-col sm:flex-row gap-4 mb-8">
             <Select value={filterType} onValueChange={setFilterType}>
               <SelectTrigger className="w-full sm:w-[200px] uppercase tracking-wider font-bold">
                 <SelectValue placeholder="Filter by type" />
@@ -320,6 +313,8 @@ const Events = () => {
                 </Card>
               ))}
             </div>
+          )}
+            </>
           )}
         </div>
       </main>
