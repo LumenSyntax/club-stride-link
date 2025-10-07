@@ -345,10 +345,30 @@ const Index = () => {
             <p className="text-2xl md:text-3xl text-background mb-12 uppercase tracking-ultra-wide font-black">
               JOIN THE COMMUNITY. ELEVATE YOUR PERFORMANCE.
             </p>
-            <Button size="lg" variant="secondary" className="uppercase tracking-ultra-wide font-black text-xl h-20 px-12">
-              GET STARTED
-              <ArrowRight className="ml-3 h-7 w-7" />
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button 
+                size="lg" 
+                variant="secondary" 
+                className="uppercase tracking-ultra-wide font-black text-lg h-16 px-10"
+                asChild
+              >
+                <a href="https://www.instagram.com/p/DN6N87FifZO/?img_index=11" target="_blank" rel="noopener noreferrer">
+                  FOLLOW ON INSTAGRAM
+                  <ArrowRight className="ml-3 h-6 w-6" />
+                </a>
+              </Button>
+              <Button 
+                size="lg" 
+                variant="secondary" 
+                className="uppercase tracking-ultra-wide font-black text-lg h-16 px-10"
+                asChild
+              >
+                <a href="https://linktr.ee/eliterunclubpr" target="_blank" rel="noopener noreferrer">
+                  JOIN OUR COMMUNITY
+                  <ArrowRight className="ml-3 h-6 w-6" />
+                </a>
+              </Button>
+            </div>
           </div>
         </div>
       </section>
