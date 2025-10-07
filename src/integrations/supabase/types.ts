@@ -406,7 +406,33 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      strava_connection_status: {
+        Row: {
+          athlete_id: number | null
+          created_at: string | null
+          expires_at: string | null
+          id: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          athlete_id?: number | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          athlete_id?: number | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       get_user_strava_token: {
