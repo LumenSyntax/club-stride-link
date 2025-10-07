@@ -24,6 +24,7 @@ export type Database = {
           distance: number | null
           duration: number | null
           id: string
+          strava_activity_id: number | null
           title: string
           updated_at: string
           user_id: string
@@ -37,6 +38,7 @@ export type Database = {
           distance?: number | null
           duration?: number | null
           id?: string
+          strava_activity_id?: number | null
           title: string
           updated_at?: string
           user_id: string
@@ -50,6 +52,7 @@ export type Database = {
           distance?: number | null
           duration?: number | null
           id?: string
+          strava_activity_id?: number | null
           title?: string
           updated_at?: string
           user_id?: string
@@ -272,6 +275,39 @@ export type Database = {
           full_name?: string | null
           id?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      strava_tokens: {
+        Row: {
+          access_token: string
+          athlete_id: number
+          created_at: string
+          expires_at: string
+          id: string
+          refresh_token: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          athlete_id: number
+          created_at?: string
+          expires_at: string
+          id?: string
+          refresh_token: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          athlete_id?: number
+          created_at?: string
+          expires_at?: string
+          id?: string
+          refresh_token?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }

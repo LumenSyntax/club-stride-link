@@ -42,6 +42,8 @@ const Profile = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [fullName, setFullName] = useState("");
   const [activityStats, setActivityStats] = useState({ count: 0, duration: 0 });
+  const [isStravaConnected, setIsStravaConnected] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   const monthlyProgress = [
     { month: "Jul", km: 45 },
@@ -61,7 +63,38 @@ const Profile = () => {
     }
     loadProfileData();
     loadActivityStats();
+    checkStravaConnection();
+    
+    // Check for Strava callback status
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('strava_connected') === 'true') {
+      toast({ title: "Strava connected successfully!" });
+      setIsStravaConnected(true);
+      window.history.replaceState({}, '', '/profile');
+    } else if (params.get('strava_error')) {
+      toast({ 
+        title: "Failed to connect Strava", 
+        description: "Please try again",
+        variant: "destructive" 
+      });
+      window.history.replaceState({}, '', '/profile');
+    }
   }, [user, navigate]);
+
+  const checkStravaConnection = async () => {
+    if (!user) return;
+    try {
+      const { data } = await supabase
+        .from("strava_tokens")
+        .select("id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      
+      setIsStravaConnected(!!data);
+    } catch (error) {
+      console.error("Error checking Strava connection:", error);
+    }
+  };
 
   const loadActivityStats = async () => {
     if (!user) return;
@@ -167,6 +200,69 @@ const Profile = () => {
   };
 
 
+  const handleConnectStrava = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('strava-auth');
+      
+      if (error) throw error;
+      
+      if (data?.authUrl) {
+        window.location.href = data.authUrl;
+      }
+    } catch (error) {
+      console.error("Error connecting to Strava:", error);
+      toast({ 
+        title: "Failed to connect to Strava", 
+        description: "Please try again",
+        variant: "destructive" 
+      });
+    }
+  };
+
+  const handleDisconnectStrava = async () => {
+    try {
+      const { error } = await supabase
+        .from('strava_tokens')
+        .delete()
+        .eq('user_id', user?.id);
+
+      if (error) throw error;
+
+      setIsStravaConnected(false);
+      toast({ title: "Strava disconnected successfully" });
+    } catch (error) {
+      console.error("Error disconnecting Strava:", error);
+      toast({ 
+        title: "Failed to disconnect Strava", 
+        variant: "destructive" 
+      });
+    }
+  };
+
+  const handleSyncStrava = async () => {
+    setIsSyncing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('strava-sync');
+      
+      if (error) throw error;
+      
+      toast({ 
+        title: "Strava sync complete", 
+        description: `Synced ${data.syncedCount} new activities` 
+      });
+      
+      loadActivityStats();
+    } catch (error) {
+      console.error("Error syncing Strava:", error);
+      toast({ 
+        title: "Failed to sync Strava activities", 
+        variant: "destructive" 
+      });
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   const handleCancelEventRegistration = async (registrationId: string) => {
     if (!confirm("Are you sure you want to cancel this event registration?")) return;
 
@@ -258,9 +354,31 @@ const Profile = () => {
                   >
                     EDIT PROFILE
                   </Button>
-                  <Button className="uppercase tracking-ultra-wide font-black">
-                    CONNECT STRAVA
-                  </Button>
+                  {!isStravaConnected ? (
+                    <Button 
+                      className="uppercase tracking-ultra-wide font-black"
+                      onClick={handleConnectStrava}
+                    >
+                      CONNECT STRAVA
+                    </Button>
+                  ) : (
+                    <>
+                      <Button 
+                        className="uppercase tracking-ultra-wide font-black"
+                        onClick={handleSyncStrava}
+                        disabled={isSyncing}
+                      >
+                        {isSyncing ? "SYNCING..." : "SYNC STRAVA"}
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        className="uppercase tracking-ultra-wide font-black"
+                        onClick={handleDisconnectStrava}
+                      >
+                        DISCONNECT
+                      </Button>
+                    </>
+                  )}
                 </div>
               </div>
             </CardContent>
