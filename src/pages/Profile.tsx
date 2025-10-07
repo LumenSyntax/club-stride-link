@@ -3,21 +3,49 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Activity, Award, Calendar, TrendingUp } from "lucide-react";
+import { Activity, Award, Calendar, TrendingUp, Flame, Clock } from "lucide-react";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 const Profile = () => {
   const stats = [
-    { label: "Total Distance", value: "342 km", icon: Activity, trend: "+12%" },
-    { label: "Total Runs", value: "48", icon: Calendar, trend: "+8%" },
-    { label: "Avg Pace", value: "5:24/km", icon: TrendingUp, trend: "+3%" },
+    { label: "Total KM", value: "342", icon: Activity, trend: "+12%" },
+    { label: "Best Time", value: "5:18/km", icon: TrendingUp, trend: "-6%" },
+    { label: "Current Streak", value: "12 days", icon: Flame, trend: "+4" },
     { label: "Achievements", value: "12", icon: Award, trend: "+2" },
   ];
 
-  const recentRuns = [
-    { date: "Jan 10, 2025", distance: "8.2 km", pace: "5:18/km", duration: "43:28" },
-    { date: "Jan 8, 2025", distance: "5.0 km", pace: "5:30/km", duration: "27:30" },
-    { date: "Jan 6, 2025", distance: "10.5 km", pace: "5:22/km", duration: "56:21" },
-    { date: "Jan 4, 2025", distance: "6.5 km", pace: "5:25/km", duration: "35:12" },
+  const monthlyProgress = [
+    { month: "Jul", km: 45 },
+    { month: "Aug", km: 62 },
+    { month: "Sep", km: 78 },
+    { month: "Oct", km: 54 },
+    { month: "Nov", km: 89 },
+    { month: "Dec", km: 95 },
+    { month: "Jan", km: 112 },
+  ];
+
+  const upcomingClasses = [
+    { 
+      title: "Morning Power Run", 
+      instructor: "Mike Chen", 
+      date: "Jan 15, 2025", 
+      time: "06:00 AM",
+      type: "livestream" as const
+    },
+    { 
+      title: "HIIT & Run Combo", 
+      instructor: "Sarah Johnson", 
+      date: "Jan 17, 2025", 
+      time: "07:00 AM",
+      type: "video" as const
+    },
+    { 
+      title: "Long Distance Training", 
+      instructor: "Alex Rodriguez", 
+      date: "Jan 20, 2025", 
+      time: "08:00 AM",
+      type: "livestream" as const
+    },
   ];
 
   return (
@@ -72,40 +100,92 @@ const Profile = () => {
             })}
           </div>
 
-          {/* Recent Activity */}
-          <Card className="border-2">
+          {/* Monthly Progress Chart */}
+          <Card className="border-2 mb-8">
             <CardHeader>
-              <CardTitle className="text-2xl font-black uppercase tracking-tight">Recent Activity</CardTitle>
+              <CardTitle className="text-2xl font-black uppercase tracking-tight">Monthly Progress</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={monthlyProgress}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis 
+                    dataKey="month" 
+                    stroke="hsl(var(--muted-foreground))"
+                    style={{ fontSize: '12px', fontWeight: 'bold' }}
+                  />
+                  <YAxis 
+                    stroke="hsl(var(--muted-foreground))"
+                    style={{ fontSize: '12px', fontWeight: 'bold' }}
+                    label={{ value: 'KM', angle: -90, position: 'insideLeft', style: { fontWeight: 'bold' } }}
+                  />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'hsl(var(--card))',
+                      border: '2px solid hsl(var(--border))',
+                      borderRadius: 'var(--radius)',
+                      fontWeight: 'bold'
+                    }}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="km" 
+                    stroke="hsl(var(--foreground))" 
+                    strokeWidth={3}
+                    dot={{ fill: 'hsl(var(--foreground))', strokeWidth: 2, r: 5 }}
+                    activeDot={{ r: 7 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          {/* Upcoming Classes */}
+          <Card className="border-2 mb-8">
+            <CardHeader>
+              <CardTitle className="text-2xl font-black uppercase tracking-tight">Upcoming Classes</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {recentRuns.map((run, index) => (
+                {upcomingClasses.map((classItem, index) => (
                   <div
                     key={index}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border-2 border-border hover:border-foreground transition-all"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border-2 border-border hover:border-foreground transition-all gap-4"
                   >
-                    <div className="mb-2 sm:mb-0">
-                      <div className="font-bold text-foreground uppercase tracking-wide">{run.date}</div>
-                      <div className="text-sm text-muted-foreground">Distance: <span className="font-bold">{run.distance}</span></div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <h3 className="font-black text-foreground uppercase tracking-wide">{classItem.title}</h3>
+                        <Badge
+                          className={`uppercase tracking-wider text-xs ${
+                            classItem.type === "livestream"
+                              ? "bg-foreground text-background"
+                              : "bg-muted text-foreground"
+                          }`}
+                        >
+                          {classItem.type === "livestream" ? "LIVE" : "On-Demand"}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground uppercase tracking-wide">
+                        with {classItem.instructor}
+                      </p>
                     </div>
-                    <div className="flex gap-6 text-sm">
-                      <div>
-                        <span className="text-muted-foreground uppercase tracking-wider">Pace:</span>{" "}
-                        <span className="font-bold">{run.pace}</span>
+                    <div className="flex items-center gap-4">
+                      <div className="text-sm">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-muted-foreground" />
+                          <span className="font-bold">{classItem.date}</span>
+                        </div>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Clock className="h-4 w-4 text-muted-foreground" />
+                          <span className="font-bold">{classItem.time}</span>
+                        </div>
                       </div>
-                      <div>
-                        <span className="text-muted-foreground uppercase tracking-wider">Duration:</span>{" "}
-                        <span className="font-bold">{run.duration}</span>
-                      </div>
+                      <Button size="sm" variant="outline" className="uppercase tracking-wider">
+                        Cancel
+                      </Button>
                     </div>
                   </div>
                 ))}
-              </div>
-              
-              <div className="mt-6 text-center">
-                <Button variant="outline" className="w-full sm:w-auto uppercase tracking-wider">
-                  View All Activities
-                </Button>
               </div>
             </CardContent>
           </Card>
