@@ -33,7 +33,7 @@ interface Profile {
 }
 
 const Profile = () => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
@@ -57,10 +57,14 @@ const Profile = () => {
 
 
   useEffect(() => {
+    // Don't redirect while auth is still loading
+    if (authLoading) return;
+    
     if (!user) {
       navigate("/auth");
       return;
     }
+    
     loadProfileData();
     loadActivityStats();
     checkStravaConnection();
@@ -79,7 +83,7 @@ const Profile = () => {
       });
       window.history.replaceState({}, '', '/profile');
     }
-  }, [user, navigate]);
+  }, [user, authLoading, navigate]);
 
   const checkStravaConnection = async () => {
     if (!user) return;
@@ -295,7 +299,7 @@ const Profile = () => {
     });
   };
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
