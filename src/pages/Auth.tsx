@@ -90,8 +90,8 @@ const Auth = () => {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="w-full max-w-md border-2">
         <CardHeader>
-          <CardTitle className="text-3xl font-black uppercase text-center tracking-[-0.05em]">
-            ELIT<span className="inline-block scale-x-[-1] -ml-[0.15em]">E</span>
+          <CardTitle className="text-3xl font-black uppercase text-center tracking-[-0.02em]">
+            ELIT<span className="inline-block scale-x-[-1] -ml-[0.08em]">E</span>
           </CardTitle>
           <CardDescription className="text-center uppercase tracking-wide">
             Join our running community
