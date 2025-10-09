@@ -61,6 +61,7 @@ export default function Activities() {
       const { data, error } = await supabase
         .from("activities")
         .select("*")
+        .eq("user_id", user?.id)
         .order("activity_date", { ascending: false });
 
       if (error) throw error;
@@ -87,6 +88,7 @@ export default function Activities() {
       const { data: weeklyData } = await supabase
         .from("activities")
         .select("duration, distance")
+        .eq("user_id", user?.id)
         .gte("activity_date", weekAgo.toISOString().split('T')[0]);
 
       if (weeklyData) {
@@ -104,6 +106,7 @@ export default function Activities() {
       const { data: monthlyData } = await supabase
         .from("activities")
         .select("duration, distance")
+        .eq("user_id", user?.id)
         .gte("activity_date", monthAgo.toISOString().split('T')[0]);
 
       if (monthlyData) {
