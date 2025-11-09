@@ -121,27 +121,10 @@ export function useEliteScore(userId?: string) {
   return useQuery<EliteScore | null>({
     queryKey: ['eliteScore', userId],
     queryFn: async () => {
-      const targetUserId = userId || (await supabase.auth.getUser()).data.user?.id;
-
-      if (!targetUserId) {
-        throw new Error('No user ID provided');
-      }
-
-      const { data, error } = await supabase
-        .from('elite_scores')
-        .select(`
-          *,
-          elite_score_signals(*)
-        `)
-        .eq('user_id', targetUserId)
-        .order('calculated_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (error) throw error;
-      return data;
+      // Elite Score feature not yet implemented in database
+      return null;
     },
-    enabled: true,
+    enabled: false,
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchInterval: 60 * 1000 // Refetch every minute
   });
@@ -191,26 +174,10 @@ export function useEliteScoreHistory(userId?: string, days: number = 30) {
   return useQuery<EliteScore[]>({
     queryKey: ['eliteScoreHistory', userId, days],
     queryFn: async () => {
-      const targetUserId = userId || (await supabase.auth.getUser()).data.user?.id;
-
-      if (!targetUserId) {
-        throw new Error('No user ID provided');
-      }
-
-      const startDate = new Date();
-      startDate.setDate(startDate.getDate() - days);
-
-      const { data, error } = await supabase
-        .from('elite_scores')
-        .select('*')
-        .eq('user_id', targetUserId)
-        .gte('calculated_at', startDate.toISOString())
-        .order('calculated_at', { ascending: true });
-
-      if (error) throw error;
-      return data || [];
+      // Elite Score feature not yet implemented in database
+      return [];
     },
-    enabled: true,
+    enabled: false,
     staleTime: 10 * 60 * 1000 // 10 minutes
   });
 }
@@ -226,16 +193,10 @@ export function useEliteLeaderboard(
   return useQuery<LeaderboardEntry[]>({
     queryKey: ['eliteLeaderboard', timeframe, limit, offset],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('get_elite_leaderboard', {
-        p_timeframe: timeframe,
-        p_limit: limit,
-        p_offset: offset
-      });
-
-      if (error) throw error;
-      return data || [];
+      // Elite Score feature not yet implemented in database
+      return [];
     },
-    enabled: true,
+    enabled: false,
     staleTime: 2 * 60 * 1000, // 2 minutes
     refetchInterval: 60 * 1000 // Refetch every minute for live leaderboard
   });
@@ -248,25 +209,10 @@ export function useUserBadges(userId?: string) {
   return useQuery<UserBadge[]>({
     queryKey: ['userBadges', userId],
     queryFn: async () => {
-      const targetUserId = userId || (await supabase.auth.getUser()).data.user?.id;
-
-      if (!targetUserId) {
-        throw new Error('No user ID provided');
-      }
-
-      const { data, error } = await supabase
-        .from('user_badges')
-        .select(`
-          *,
-          elite_badges(*)
-        `)
-        .eq('user_id', targetUserId)
-        .order('earned_at', { ascending: false });
-
-      if (error) throw error;
-      return data || [];
+      // Elite Score feature not yet implemented in database
+      return [];
     },
-    enabled: true,
+    enabled: false,
     staleTime: 5 * 60 * 1000 // 5 minutes
   });
 }
@@ -278,15 +224,10 @@ export function useAllBadges() {
   return useQuery<EliteBadge[]>({
     queryKey: ['allBadges'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('elite_badges')
-        .select('*')
-        .order('points', { ascending: false });
-
-      if (error) throw error;
-      return data || [];
+      // Elite Score feature not yet implemented in database
+      return [];
     },
-    enabled: true,
+    enabled: false,
     staleTime: 30 * 60 * 1000 // 30 minutes - badges don't change often
   });
 }
@@ -298,28 +239,10 @@ export function useEliteRecommendations(userId?: string, includeCompleted: boole
   return useQuery<EliteRecommendation[]>({
     queryKey: ['eliteRecommendations', userId, includeCompleted],
     queryFn: async () => {
-      const targetUserId = userId || (await supabase.auth.getUser()).data.user?.id;
-
-      if (!targetUserId) {
-        throw new Error('No user ID provided');
-      }
-
-      let query = supabase
-        .from('elite_recommendations')
-        .select('*')
-        .eq('user_id', targetUserId)
-        .order('created_at', { ascending: false });
-
-      if (!includeCompleted) {
-        query = query.eq('completed', false);
-      }
-
-      const { data, error } = await query;
-
-      if (error) throw error;
-      return data || [];
+      // Elite Score feature not yet implemented in database
+      return [];
     },
-    enabled: true,
+    enabled: false,
     staleTime: 5 * 60 * 1000 // 5 minutes
   });
 }
@@ -333,15 +256,8 @@ export function useCompleteRecommendation() {
 
   return useMutation<void, Error, string>({
     mutationFn: async (recommendationId: string) => {
-      const { error } = await supabase
-        .from('elite_recommendations')
-        .update({
-          completed: true,
-          completed_at: new Date().toISOString()
-        })
-        .eq('id', recommendationId);
-
-      if (error) throw error;
+      // Elite Score feature not yet implemented in database
+      throw new Error('Elite Score feature not available');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['eliteRecommendations'] });
@@ -367,31 +283,10 @@ export function useUserRank(userId?: string) {
   return useQuery<{ rank: number; total: number } | null>({
     queryKey: ['userRank', userId],
     queryFn: async () => {
-      const targetUserId = userId || (await supabase.auth.getUser()).data.user?.id;
-
-      if (!targetUserId) {
-        return null;
-      }
-
-      // Get all ranked users
-      const { data: leaderboard } = await supabase.rpc('get_elite_leaderboard', {
-        p_timeframe: 'all',
-        p_limit: 10000,
-        p_offset: 0
-      });
-
-      if (!leaderboard) return null;
-
-      const userEntry = leaderboard.find((entry: LeaderboardEntry) => entry.user_id === targetUserId);
-
-      if (!userEntry) return null;
-
-      return {
-        rank: userEntry.rank,
-        total: leaderboard.length
-      };
+      // Elite Score feature not yet implemented in database
+      return null;
     },
-    enabled: true,
+    enabled: false,
     staleTime: 5 * 60 * 1000 // 5 minutes
   });
 }
@@ -476,38 +371,6 @@ export function useEliteScoreRealtime(userId?: string) {
 
   const targetUserId = userId || user?.id;
 
-  // Subscribe to realtime updates
-  useQuery({
-    queryKey: ['eliteScoreRealtime', targetUserId],
-    queryFn: () => null,
-    enabled: !!targetUserId,
-    refetchInterval: false,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-    onSuccess: () => {
-      if (!targetUserId) return;
-
-      const channel = supabase
-        .channel(`elite_scores:${targetUserId}`)
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'elite_scores',
-            filter: `user_id=eq.${targetUserId}`
-          },
-          (payload) => {
-            console.log('Elite Score updated:', payload);
-            queryClient.invalidateQueries({ queryKey: ['eliteScore', targetUserId] });
-            queryClient.invalidateQueries({ queryKey: ['eliteLeaderboard'] });
-          }
-        )
-        .subscribe();
-
-      return () => {
-        supabase.removeChannel(channel);
-      };
-    }
-  });
+  // Disabled - Elite Score feature not yet implemented
+  return null;
 }
