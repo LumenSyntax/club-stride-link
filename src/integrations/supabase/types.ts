@@ -180,6 +180,181 @@ export type Database = {
         }
         Relationships: []
       }
+      elite_badges: {
+        Row: {
+          category: string
+          created_at: string
+          description: string
+          icon: string
+          id: string
+          name: string
+          points: number
+          rarity: string
+          requirements: Json
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description: string
+          icon: string
+          id?: string
+          name: string
+          points?: number
+          rarity: string
+          requirements?: Json
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string
+          icon?: string
+          id?: string
+          name?: string
+          points?: number
+          rarity?: string
+          requirements?: Json
+        }
+        Relationships: []
+      }
+      elite_recommendations: {
+        Row: {
+          action_items: string[]
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          description: string
+          expires_at: string
+          id: string
+          priority: string
+          score_id: string
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          action_items?: string[]
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          description: string
+          expires_at: string
+          id?: string
+          priority: string
+          score_id: string
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          action_items?: string[]
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          description?: string
+          expires_at?: string
+          id?: string
+          priority?: string
+          score_id?: string
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "elite_recommendations_score_id_fkey"
+            columns: ["score_id"]
+            isOneToOne: false
+            referencedRelation: "elite_scores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      elite_score_signals: {
+        Row: {
+          confidence: number
+          created_at: string
+          evidence: Json | null
+          id: string
+          score_id: string
+          signal_name: string
+          signal_value: number
+          weight: number
+        }
+        Insert: {
+          confidence: number
+          created_at?: string
+          evidence?: Json | null
+          id?: string
+          score_id: string
+          signal_name: string
+          signal_value: number
+          weight: number
+        }
+        Update: {
+          confidence?: number
+          created_at?: string
+          evidence?: Json | null
+          id?: string
+          score_id?: string
+          signal_name?: string
+          signal_value?: number
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "elite_score_signals_score_id_fkey"
+            columns: ["score_id"]
+            isOneToOne: false
+            referencedRelation: "elite_scores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      elite_scores: {
+        Row: {
+          calculated_at: string
+          created_at: string
+          id: string
+          instant_score: number
+          level: string
+          level_tier: string
+          metadata: Json | null
+          next_evaluation: string
+          percentile: number
+          temporal_score: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          calculated_at?: string
+          created_at?: string
+          id?: string
+          instant_score: number
+          level: string
+          level_tier: string
+          metadata?: Json | null
+          next_evaluation: string
+          percentile: number
+          temporal_score: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          calculated_at?: string
+          created_at?: string
+          id?: string
+          instant_score?: number
+          level?: string
+          level_tier?: string
+          metadata?: Json | null
+          next_evaluation?: string
+          percentile?: number
+          temporal_score?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       event_registrations: {
         Row: {
           event_id: string
@@ -338,6 +513,48 @@ export type Database = {
         }
         Relationships: []
       }
+      user_badges: {
+        Row: {
+          badge_id: string
+          earned_at: string
+          evidence: Json | null
+          id: string
+          score_id: string | null
+          user_id: string
+        }
+        Insert: {
+          badge_id: string
+          earned_at?: string
+          evidence?: Json | null
+          id?: string
+          score_id?: string | null
+          user_id: string
+        }
+        Update: {
+          badge_id?: string
+          earned_at?: string
+          evidence?: Json | null
+          id?: string
+          score_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "elite_badges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_badges_score_id_fkey"
+            columns: ["score_id"]
+            isOneToOne: false
+            referencedRelation: "elite_scores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string
@@ -409,6 +626,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_elite_leaderboard: {
+        Args: { p_limit?: number; p_offset?: number; p_timeframe?: string }
+        Returns: {
+          avatar_url: string
+          badge_count: number
+          full_name: string
+          level: string
+          level_tier: string
+          percentile: number
+          rank: number
+          temporal_score: number
+          user_id: string
+        }[]
+      }
       get_user_strava_token: {
         Args: { _user_id: string }
         Returns: {
