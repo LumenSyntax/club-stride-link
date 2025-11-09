@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Trophy, TrendingUp, Award, Crown, Medal } from 'lucide-react';
-import { useEliteLeaderboard, type LeaderboardEntry } from '@/hooks/useEliteScore';
+import { useEliteLeaderboard } from '@/hooks/elite-score';
+import type { LeaderboardEntry } from '@/hooks/elite-score';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 

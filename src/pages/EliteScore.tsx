@@ -28,7 +28,7 @@ import {
   useEliteRecommendations,
   useCompleteRecommendation,
   useFormattedEliteScore
-} from '@/hooks/useEliteScore';
+} from '@/hooks/elite-score';
 import { useAuth } from '@/hooks/useAuth';
 import { LineChart, Line, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { cn } from '@/lib/utils';
